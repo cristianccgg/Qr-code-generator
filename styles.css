@@ -4,18 +4,48 @@
   padding: 0;
 }
 
+:root {
+  --Uny-1-hex: #f2226e;
+  --Uny-2-hex: #f21d81;
+  --Uny-3-hex: #056cf2;
+  --Uny-4-hex: #023059;
+  --Uny-5-hex: #41f28e;
+
+  --color-Design-1-hex: #470459;
+  --color-Design-2-hex: #8538a6;
+  --color-Design-3-hex: #7386bf;
+  --color-Design-4-hex: #f2cb57;
+  --color-Design-5-hex: #f2f2f2;
+}
+
 main {
   height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background-color: var(--Uny-4-hex);
+}
+
+.text {
+  color: #41f2d7;
 }
 
 .main-container {
   width: 40vw;
 }
 
+.error {
+  color: rgb(229, 85, 69);
+}
+
 .input {
+  width: 30vw;
   height: 6vh;
+}
+
+.btn-primary {
+  background-color: #41f2d7;
+  color: var(--Uny-4-hex);
+  font-weight: 600;
 }

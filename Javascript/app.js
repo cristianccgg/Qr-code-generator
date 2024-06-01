@@ -1,46 +1,72 @@
-const qrContainer = document.getElementById("qr-container");
-const form = document.getElementById("form");
-const btn = document.getElementById("btn");
-const qrDescriptionInput = document.getElementById("input-description");
-const descriptionResult = document.getElementById("description-result");
-const download = document.getElementById("downloadBtn");
+document.addEventListener("DOMContentLoaded", () => {
+  const qrContainer = document.getElementById("qr-container");
+  const form = document.getElementById("form");
+  const btn = document.getElementById("btn");
+  const qrDescriptionInput = document.getElementById("input-description");
+  const descriptionResult = document.getElementById("description-result");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const input = document.getElementById("input");
+  const msg = document.getElementById("error");
 
-const QR = new QRCode(qrContainer);
+  const QR = new QRCode(qrContainer);
 
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
-  QR.makeCode(form.input.value);
-  descriptionResult.innerText = qrDescriptionInput.value;
-});
+  const urlRegex =
+    /^[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/;
 
-downloadBtn.addEventListener("click", () => {
-  const qrImage = qrContainer.querySelector("img");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (btn.innerText === "GENERATE QR CODE" && urlRegex.test(input.value)) {
+      QR.clear();
+      QR.makeCode(form.input.value);
+      descriptionResult.innerText = qrDescriptionInput.value;
+      qrContainer.classList.remove("d-none");
+      btn.innerText = "NEW QR CODE";
+      msg.classList.add("d-none");
+    } else if (btn.innerText === "GENERATE QR CODE") {
+      msg.classList.remove("d-none");
+      qrContainer.classList.add("d-none");
+      btn.innerText = "GENERATE QR CODE";
+      form.reset();
+    } else {
+      qrContainer.classList.add("d-none");
+      btn.innerText = "GENERATE QR CODE";
+      form.reset();
+    }
+  });
 
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  btn.addEventListener("submit", () => {
+    form.reset();
+  });
 
-  canvas.width = qrImage.width;
-  canvas.height = qrImage.height + 40;
+  downloadBtn.addEventListener("click", () => {
+    const qrImage = qrContainer.querySelector("img");
 
-  ctx.drawImage(qrImage, 0, 0);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-  const description = qrDescriptionInput.value;
-  ctx.font = "16px Arial";
-  ctx.fillStyle = "black";
-  const textWidth = ctx.measureText(description).width;
-  const textX = (canvas.width - textWidth) / 2;
-  ctx.fillText(description, textX, qrImage.height + 25);
+    canvas.width = qrImage.width;
+    canvas.height = qrImage.height + 40;
 
-  // Convertir el lienzo a una imagen
-  const compositeImage = canvas.toDataURL("image/png");
+    ctx.drawImage(qrImage, 0, 0);
 
-  // Crear un enlace para descargar la imagen compuesta
-  const downloadLink = document.createElement("a");
-  downloadLink.href = compositeImage;
-  downloadLink.download = "qr_code_with_description.png"; // Nombre del archivo de descarga
+    const description = qrDescriptionInput.value;
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "black";
+    const textWidth = ctx.measureText(description).width;
+    const textX = (canvas.width - textWidth) / 2;
+    ctx.fillText(description, textX, qrImage.height + 25);
 
-  // Simular un clic en el enlace para iniciar la descarga
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  document.body.removeChild(downloadLink);
+    // Convertir el lienzo a una imagen
+    const compositeImage = canvas.toDataURL("image/png");
+
+    // Crear un enlace para descargar la imagen compuesta
+    const downloadLink = document.createElement("a");
+    downloadLink.href = compositeImage;
+    downloadLink.download = "qr_code_with_description.png"; // Nombre del archivo de descarga
+
+    // Simular un clic en el enlace para iniciar la descarga
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  });
 });
