@@ -2,41 +2,47 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: "Josefin Sans", sans-serif;
 }
 
 :root {
-  --Uny-1-hex: #f2226e;
-  --Uny-2-hex: #f21d81;
-  --Uny-3-hex: #056cf2;
-  --Uny-4-hex: #023059;
-  --Uny-5-hex: #41f28e;
-
-  --color-Design-1-hex: #470459;
-  --color-Design-2-hex: #8538a6;
-  --color-Design-3-hex: #7386bf;
-  --color-Design-4-hex: #f2cb57;
-  --color-Design-5-hex: #f2f2f2;
+  --main-red: #f5576c;
+  --main-green: #40b49d;
 }
 
 main {
   height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--Uny-4-hex);
+  background-color: #f5576c;
+}
+
+.navbar-brand,
+.nav-link {
+  font-weight: 800 !important;
+  color: #f5576c !important;
+}
+
+.icon {
+  width: 6vh;
+  height: 6vh;
+  background-color: white;
+}
+
+.sign-up {
+  background-color: var(--main-red);
+  color: white !important;
 }
 
 .text {
-  color: #41f2d7;
+  color: white;
 }
 
-.main-container {
+.section-1,
+.section-2 {
   width: 40vw;
 }
 
 .error {
-  color: rgb(229, 85, 69);
+  color: rgb(28, 254, 103);
 }
 
 .input {
@@ -44,8 +50,18 @@ main {
   height: 6vh;
 }
 
+.qr-container {
+  width: 256px;
+  height: 256px;
+  background-color: white;
+}
+
+.description {
+  color: black;
+}
+
 .btn-primary {
-  background-color: #41f2d7;
-  color: var(--Uny-4-hex);
+  background-color: var(--main-green);
+  color: white;
   font-weight: 600;
 }

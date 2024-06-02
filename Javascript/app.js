@@ -7,48 +7,84 @@ document.addEventListener("DOMContentLoaded", () => {
   const downloadBtn = document.getElementById("downloadBtn");
   const input = document.getElementById("input");
   const msg = document.getElementById("error");
+  const colorSelect = document.getElementById("color");
+  const sizeSelect = document.getElementById("size");
 
-  const QR = new QRCode(qrContainer);
+  function generateQRCode(url, color) {
+    qrContainer.innerHTML = "";
 
-  const urlRegex =
-    /^[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/;
+    // Crear una nueva instancia de QRCode con el tamaño de previsualización fijo (medium)
+    const QR = new QRCode(qrContainer, {
+      text: url,
+      width: 200,
+      height: 200,
+      colorDark: color,
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H,
+    });
 
+    // Mostrar el texto de la descripción (si está disponible)
+    descriptionResult.innerText = qrDescriptionInput.value;
+  }
+
+  // Generar automáticamente el código QR al cargar la página
+  generateQRCode("https://example.com", colorSelect.value);
+
+  // Escuchar los eventos de cambio en el selector de color
+  colorSelect.addEventListener("change", () => {
+    generateQRCode(input.value || "https://example.com", colorSelect.value);
+  });
+
+  // Evento de envío del formulario
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    if (btn.innerText === "GENERATE QR CODE" && urlRegex.test(input.value)) {
-      QR.clear();
-      QR.makeCode(form.input.value);
-      descriptionResult.innerText = qrDescriptionInput.value;
-      qrContainer.classList.remove("d-none");
-      btn.innerText = "NEW QR CODE";
+    if (btn.innerText === "APPLY CHANGES") {
+      // Generar el código QR con el color seleccionado
+      generateQRCode(input.value || "https://example.com", colorSelect.value);
+
+      // Ocultar el mensaje de error
       msg.classList.add("d-none");
-    } else if (btn.innerText === "GENERATE QR CODE") {
-      msg.classList.remove("d-none");
-      qrContainer.classList.add("d-none");
-      btn.innerText = "GENERATE QR CODE";
+    } else if (btn.innerText === "NEW QR CODE") {
+      // Restablecer el formulario
       form.reset();
-    } else {
+
+      // Ocultar el contenedor QR
       qrContainer.classList.add("d-none");
+
+      // Cambiar el texto del botón
       btn.innerText = "GENERATE QR CODE";
-      form.reset();
     }
   });
 
-  btn.addEventListener("submit", () => {
-    form.reset();
-  });
-
+  // Evento de descarga del código QR
   downloadBtn.addEventListener("click", () => {
+    // Obtener el tamaño seleccionado para la descarga
+    const selectedSize = sizeSelect.value;
+
+    // Generar el código QR con el color seleccionado y el tamaño de descarga
+    const QR = new QRCode(qrContainer, {
+      text: input.value || "https://example.com",
+      width: selectedSize,
+      height: selectedSize,
+      colorDark: colorSelect.value,
+      colorLight: "#ffffff", // Opcional: color claro predeterminado
+      correctLevel: QRCode.CorrectLevel.H,
+    });
+
+    // Mostrar el texto de la descripción (si está disponible)
+    descriptionResult.innerText = qrDescriptionInput.value;
+
+    // Convertir el contenedor QR en una imagen
     const qrImage = qrContainer.querySelector("img");
 
+    // Crear un canvas para combinar el código QR con la descripción
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-
     canvas.width = qrImage.width;
     canvas.height = qrImage.height + 40;
-
     ctx.drawImage(qrImage, 0, 0);
 
+    // Agregar la descripción encima del código QR
     const description = qrDescriptionInput.value;
     ctx.font = "20px Arial";
     ctx.fillStyle = "black";
@@ -56,15 +92,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const textX = (canvas.width - textWidth) / 2;
     ctx.fillText(description, textX, qrImage.height + 25);
 
-    // Convertir el lienzo a una imagen
+    // Convertir el canvas en una imagen
     const compositeImage = canvas.toDataURL("image/png");
 
-    // Crear un enlace para descargar la imagen compuesta
+    // Crear un enlace de descarga y simular un clic para descargar la imagen
     const downloadLink = document.createElement("a");
     downloadLink.href = compositeImage;
-    downloadLink.download = "qr_code_with_description.png"; // Nombre del archivo de descarga
-
-    // Simular un clic en el enlace para iniciar la descarga
+    downloadLink.download = "qr_code_with_description.png";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);

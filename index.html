@@ -10,6 +10,12 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&family=Inter:wght@100..900&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Kumbh+Sans:wght@100..900&family=Manrope:wght@200..800&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Outfit:wght@100..900&family=Overpass:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
     <script
       defer
@@ -21,44 +27,106 @@
     <script defer src="./Javascript/app.js"></script>
   </head>
   <body>
-    <main class="py-5">
-      <h1 class="title text text-center">QR GENERATOR</h1>
-      <div
-        class="main-container d-flex flex-column align-items-center justify-content-between"
-      >
-        <form action="" id="form" class="form d-flex flex-column gap-2">
-          <label class="w-100 d-flex flex-column text" for="input">
-            Please write your URL here
-            <input
-              class="input rounded-1 p-2"
-              type="text"
-              id="input"
-              placeholder="url here"
+    <main class="d-flex align-items-center">
+      <nav class="navbar navbar-expand-lg bg-body-tertiary position-absolute top-0 w-100">
+        <div class="container-fluid ">
+          <a class="navbar-brand ms-2" href="#">
+            <img
+              src="/a-modern-and-sleek-linear-icon-of-a-qr-code-in-a-v-2joqjbYSQZ2kq5NTVXcGOA-ImMrm9jTQBiAcUriC5p6bA.jpeg"
+              alt="Logo"
+              width="70"
+              height="70"
+              class="d-inline-block align-text-middle rounded-2"
             />
-          </label>
-          <label class="w-100 d-flex flex-column text" for="input-description">
-            Please write description here
-            <input
-              class="input rounded-1 p-2"
-              type="text"
-              id="input-description"
-              placeholder="QR CODE"
-            />
-          </label>
-          <p id="error" class="error d-none">Please write a valid url</p>
-          <button id="btn" class="btn btn-primary submit" type="submit">
-            GENERATE QR CODE
+            QR CODE GENERATOR
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
           </button>
-        </form>
-        <div class="qr-and-text d-flex flex-column align-items-center">
-          <div id="qr-container" class="qr-container p-4 d-none"></div>
-          <h2 id="description-result" class="text-center text">
-            Description Text
-          </h2>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto me-2">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">LOG IN</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link sign-up rounded-5" href="#">SIGN UP</a>
+              </li>
+            </ul>
+        </div>
+      </nav>
+      <div class="container main-container d-flex justify-content-center">
+        <section
+          class="section-1 d-flex flex-column align-items-center justify-content-between"
+        >
+          <form action="" id="form" class="form d-flex flex-column gap-2">
+            <label class="w-100 d-flex flex-column text" for="input">
+              Write your URL here
+              <div class=" d-flex gap-2">
+                <img class="icon rounded-2" src="./link-solid-2.svg" />
+                <input
+                  class="input rounded-1 p-2"
+                  type="text"
+                  id="input"
+                  placeholder="URL here"
+                />
+              </div>
+            </label>
+            <label
+              class="w-100 d-flex flex-column text"
+              for="input-description"
+            >
+              Write description here (optional)
+              <div class=" d-flex gap-2">
+                <img class="icon rounded-2" src="./pen-solid.svg">
+                <input
+                  class="input rounded-1 p-2"
+                  type="text"
+                  id="input-description"
+                  placeholder="QR CODE"
+                />
+              </div>
+            </label>
+            <label class="w-100 d-flex flex-column text" for="color">
+              Select QR color
+              <div class=" d-flex gap-2">
+                <img class="icon rounded-2" src="./brush-solid.svg">
+                <select id="color" class="input rounded-1 p-2">
+                  <option value="#000000">Black</option>
+                  <option value="#f5576c">Design 1</option>
+                  <option value="#8538a6">Design 2</option>
+                  <option value="#7386bf">Design 3</option>
+                  <option value="#f2cb57">Design 4</option>
+                  <option value="#40B49D">Design 5</option>
+                </select>
+              </div>
+            </label>
+            <label class="w-100 d-flex flex-column text" for="size">
+              Select size
+              <div class=" d-flex gap-2">
+                <img class="icon rounded-2" src="./expand-solid.svg">
+              <select id="size" class="input rounded-1 p-2">
+                <option value="128">Small</option>
+                <option value="256" selected>Medium</option>
+                <option value="512">Large</option>
+              </select>
+              </div>
+            </label>
+            <p id="error" class="error d-none">Please write a valid URL</p>
+            <button id="btn" class="btn btn-primary submit" type="submit">
+              APPLY CHANGES
+            </button>
+          </form>
+        </section>
+        <section
+          class="section-2 qr-and-text d-flex flex-column align-items-center justify-content-between"
+        >
+        <p class="text">Your code will loke like this</p>
+          <div id="qr-container" class="qr-container"><h2 id="description-result" class="text-center description">Description text</h2></div>
+          
           <button id="downloadBtn" class="btn btn-primary" type="button">
             DOWNLOAD QR
           </button>
-        </div>
+        </section>
       </div>
     </main>
   </body>
