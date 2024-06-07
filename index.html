@@ -24,73 +24,88 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
-    <script defer src="./Javascript/app.js"></script>
   </head>
   <body>
-    <main class="d-flex align-items-center">
-      <nav class="navbar navbar-expand-lg bg-body-tertiary position-absolute top-0 w-100">
-        <div class="container-fluid ">
-          <a class="navbar-brand ms-2" href="#">
+    <main>
+      <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">
             <img
-              src="/a-modern-and-sleek-linear-icon-of-a-qr-code-in-a-v-2joqjbYSQZ2kq5NTVXcGOA-ImMrm9jTQBiAcUriC5p6bA.jpeg"
+              src="/images/a-modern-and-sleek-linear-icon-of-a-qr-code-in-a-v-2joqjbYSQZ2kq5NTVXcGOA-ImMrm9jTQBiAcUriC5p6bA.jpeg"
               alt="Logo"
               width="70"
               height="70"
-              class="d-inline-block align-text-middle rounded-2"
+              class="d-inline-block align-text-middle"
             />
             QR CODE GENERATOR
           </a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto me-2">
+            <ul class="navbar-nav">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">LOG IN</a>
+                <a class="nav-link active" aria-current="page" href="#">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link sign-up rounded-5" href="#">SIGN UP</a>
+                <a class="nav-link" href="#">Features</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Pricing</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link disabled" aria-disabled="true">Disabled</a>
               </li>
             </ul>
+          </div>
         </div>
       </nav>
-      <div class="container main-container d-flex justify-content-center">
-        <section
-          class="section-1 d-flex flex-column align-items-center justify-content-between"
-        >
-          <form action="" id="form" class="form d-flex flex-column gap-2">
-            <label class="w-100 d-flex flex-column text" for="input">
+      <!-- Fin Del Navbar -->
+
+      <div class="main-container d-md-flex">
+        <section class="section-1">
+          <form
+            action=""
+            id="form"
+            class="d-flex flex-column gap-2 p-2 justify-content-between"
+          >
+            <label class="text" for="input">
               Write your URL here
-              <div class=" d-flex gap-2">
-                <img class="icon rounded-2" src="./link-solid-2.svg" />
+              <div class="d-flex justify-content-between gap-2">
+                <img class="icon rounded-2" src="./images/link-solid-2.svg" />
                 <input
-                  class="input rounded-1 p-2"
+                  class="input"
                   type="text"
                   id="input"
                   placeholder="URL here"
                 />
               </div>
             </label>
-            <label
-              class="w-100 d-flex flex-column text"
-              for="input-description"
-            >
+            <label class="text" for="input-description">
               Write description here (optional)
-              <div class=" d-flex gap-2">
-                <img class="icon rounded-2" src="./pen-solid.svg">
+              <div class="d-flex justify-content-between gap-2">
+                <img class="icon rounded-2" src="./images/pen-solid.svg" />
                 <input
-                  class="input rounded-1 p-2"
+                  class="input"
                   type="text"
                   id="input-description"
                   placeholder="QR CODE"
                 />
               </div>
             </label>
-            <label class="w-100 d-flex flex-column text" for="color">
+            <label class="text" for="color">
               Select QR color
-              <div class=" d-flex gap-2">
-                <img class="icon rounded-2" src="./brush-solid.svg">
-                <select id="color" class="input rounded-1 p-2">
+              <div class="d-flex justify-content-between gap-2">
+                <img class="icon rounded-2" src="./images/brush-solid.svg" />
+                <select id="color" class="input">
                   <option value="#000000">Black</option>
                   <option value="#f5576c">Design 1</option>
                   <option value="#8538a6">Design 2</option>
@@ -100,34 +115,51 @@
                 </select>
               </div>
             </label>
-            <label class="w-100 d-flex flex-column text" for="size">
+            <label class="text" for="size">
               Select size
-              <div class=" d-flex gap-2">
-                <img class="icon rounded-2" src="./expand-solid.svg">
-              <select id="size" class="input rounded-1 p-2">
-                <option value="128">Small</option>
-                <option value="256" selected>Medium</option>
-                <option value="512">Large</option>
-              </select>
+              <div class="d-flex justify-content-between gap-2">
+                <img class="icon rounded-2" src="./images/expand-solid.svg" />
+                <select id="size" class="input">
+                  <option value="128">Small</option>
+                  <option value="256" selected>Medium</option>
+                  <option value="512">Large</option>
+                </select>
               </div>
             </label>
-            <p id="error" class="error d-none">Please write a valid URL</p>
-            <button id="btn" class="btn btn-primary submit" type="submit">
-              APPLY CHANGES
-            </button>
+            <div>
+              <button
+                id="btn-changes"
+                class="btn btn-primary submit"
+                type="submit"
+              >
+                APPLY CHANGES
+              </button>
+            </div>
           </form>
         </section>
         <section
-          class="section-2 qr-and-text d-flex flex-column align-items-center justify-content-between"
+          class="section-2 d-flex flex-column gap-2 p-2 align-items-center justify-content-between align-items-middle"
         >
-        <p class="text">Your code will loke like this</p>
-          <div id="qr-container" class="qr-container"><h2 id="description-result" class="text-center description">Description text</h2></div>
-          
-          <button id="downloadBtn" class="btn btn-primary" type="button">
-            DOWNLOAD QR
-          </button>
+          <p class="text">Your code will look like this</p>
+
+          <div id="qr-container" class="qr-container">
+            <div id="qr-code" class="qr-code"></div>
+          </div>
+          <div>
+            <h2 id="description-result" class="text-center">
+              Description text
+            </h2>
+
+            <p id="sizeText" class="text-center">Medium (256px * 256 px)</p>
+          </div>
+          <div>
+            <button id="downloadBtn" class="btn btn-primary" type="button">
+              DOWNLOAD QR
+            </button>
+          </div>
         </section>
       </div>
     </main>
+    <script defer src="./Javascript/app.js"></script>
   </body>
 </html>

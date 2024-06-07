@@ -10,58 +10,22 @@
   --main-green: #40b49d;
 }
 
-main {
-  height: 100vh;
-  background-color: #f5576c;
-}
-
-.navbar-brand,
-.nav-link {
-  font-weight: 800 !important;
-  color: #f5576c !important;
-}
-
-.icon {
-  width: 6vh;
-  height: 6vh;
-  background-color: white;
-}
-
-.sign-up {
+.main-container {
   background-color: var(--main-red);
-  color: white !important;
 }
 
-.text {
-  color: white;
-}
-
-.section-1,
-.section-2 {
-  width: 40vw;
-}
-
-.error {
-  color: rgb(28, 254, 103);
+.navbar-brand {
+  font-size: 1rem;
 }
 
 .input {
-  width: 30vw;
-  height: 6vh;
+  width: 100%;
+  border-radius: 10px;
+  padding: 10px;
 }
 
-.qr-container {
-  width: 256px;
-  height: 256px;
+.icon {
+  width: 15%;
+  height: 50px;
   background-color: white;
-}
-
-.description {
-  color: black;
-}
-
-.btn-primary {
-  background-color: var(--main-green);
-  color: white;
-  font-weight: 600;
 }

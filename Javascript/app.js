@@ -1,106 +1,106 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const qrContainer = document.getElementById("qr-container");
-  const form = document.getElementById("form");
-  const btn = document.getElementById("btn");
+  const qrContainer = document.getElementById("qr-code");
   const qrDescriptionInput = document.getElementById("input-description");
-  const descriptionResult = document.getElementById("description-result");
   const downloadBtn = document.getElementById("downloadBtn");
   const input = document.getElementById("input");
-  const msg = document.getElementById("error");
   const colorSelect = document.getElementById("color");
   const sizeSelect = document.getElementById("size");
+  const sizeText = document.getElementById("sizeText");
+  const applyChanges = document.getElementById("btn-changes");
+  const descriptionResult = document.getElementById("description-result");
 
-  function generateQRCode(url, color) {
+  const sizeLabels = {
+    128: "Small",
+    256: "Medium",
+    512: "Large",
+  };
+
+  const previewSize = 200; // Tamaño fijo para la vista previa
+
+  // Función para generar QR Code
+  function generateQRCode(url, color, size) {
     qrContainer.innerHTML = "";
-
-    // Crear una nueva instancia de QRCode con el tamaño de previsualización fijo (medium)
-    const QR = new QRCode(qrContainer, {
+    new QRCode(qrContainer, {
       text: url,
-      width: 200,
-      height: 200,
+      width: size,
+      height: size,
+      colorDark: color,
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H,
+    });
+  }
+
+  // Generar QR Code de vista previa con tamaño fijo
+  generateQRCode("https://example.com", colorSelect.value, previewSize);
+
+  // Actualizar color en tiempo real
+  colorSelect.addEventListener("change", () => {
+    generateQRCode(
+      input.value || "https://example.com",
+      colorSelect.value,
+      previewSize
+    );
+  });
+
+  // Evento del botón Apply Changes
+  applyChanges.addEventListener("click", () => {
+    const url = input.value || "https://example.com";
+    const color = colorSelect.value;
+    descriptionResult.innerText = qrDescriptionInput.value;
+    generateQRCode(url, color, previewSize);
+  });
+
+  // Actualizar tamaño en el texto
+  sizeSelect.addEventListener("change", () => {
+    const selectedSize = sizeSelect.value;
+    const sizeLabel = sizeLabels[selectedSize];
+    sizeText.innerText = `${sizeLabel} (${selectedSize}px * ${selectedSize}px)`;
+  });
+
+  // --------------------------------------------------------------
+
+  // Función para generar y descargar QR Code con el tamaño seleccionado y la descripción
+  function downloadQRCodeWithDescription(url, color, size, description) {
+    const tempContainer = document.createElement("div");
+    new QRCode(tempContainer, {
+      text: url,
+      width: size,
+      height: size,
       colorDark: color,
       colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.H,
     });
 
-    // Mostrar el texto de la descripción (si está disponible)
-    descriptionResult.innerText = qrDescriptionInput.value;
-  }
+    const qrCanvas = tempContainer.querySelector("canvas");
 
-  // Generar automáticamente el código QR al cargar la página
-  generateQRCode("https://example.com", colorSelect.value);
-
-  // Escuchar los eventos de cambio en el selector de color
-  colorSelect.addEventListener("change", () => {
-    generateQRCode(input.value || "https://example.com", colorSelect.value);
-  });
-
-  // Evento de envío del formulario
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (btn.innerText === "APPLY CHANGES") {
-      // Generar el código QR con el color seleccionado
-      generateQRCode(input.value || "https://example.com", colorSelect.value);
-
-      // Ocultar el mensaje de error
-      msg.classList.add("d-none");
-    } else if (btn.innerText === "NEW QR CODE") {
-      // Restablecer el formulario
-      form.reset();
-
-      // Ocultar el contenedor QR
-      qrContainer.classList.add("d-none");
-
-      // Cambiar el texto del botón
-      btn.innerText = "GENERATE QR CODE";
-    }
-  });
-
-  // Evento de descarga del código QR
-  downloadBtn.addEventListener("click", () => {
-    // Obtener el tamaño seleccionado para la descarga
-    const selectedSize = sizeSelect.value;
-
-    // Generar el código QR con el color seleccionado y el tamaño de descarga
-    const QR = new QRCode(qrContainer, {
-      text: input.value || "https://example.com",
-      width: selectedSize,
-      height: selectedSize,
-      colorDark: colorSelect.value,
-      colorLight: "#ffffff", // Opcional: color claro predeterminado
-      correctLevel: QRCode.CorrectLevel.H,
-    });
-
-    // Mostrar el texto de la descripción (si está disponible)
-    descriptionResult.innerText = qrDescriptionInput.value;
-
-    // Convertir el contenedor QR en una imagen
-    const qrImage = qrContainer.querySelector("img");
-
-    // Crear un canvas para combinar el código QR con la descripción
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    canvas.width = qrImage.width;
-    canvas.height = qrImage.height + 40;
-    ctx.drawImage(qrImage, 0, 0);
 
-    // Agregar la descripción encima del código QR
+    const textHeight = 40; // Adjust as needed
+    canvas.width = size;
+    canvas.height = size + textHeight;
+
+    // Draw QR code on the new canvas
+    ctx.drawImage(qrCanvas, 0, 0);
+
+    // Draw the description text below the QR code
+    ctx.fillStyle = "#000000"; // Text color
+    ctx.font = "24px Arial"; // Font settings
+    ctx.textAlign = "center";
+    ctx.fillText(description, size / 2, size + textHeight - 10);
+
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = "qrcode_with_description.png";
+    link.click();
+  }
+
+  // Evento del botón Download
+  downloadBtn.addEventListener("click", () => {
+    const url = input.value || "https://example.com";
+    const color = colorSelect.value;
+    const size = parseInt(sizeSelect.value);
     const description = qrDescriptionInput.value;
-    ctx.font = "20px Arial";
-    ctx.fillStyle = "black";
-    const textWidth = ctx.measureText(description).width;
-    const textX = (canvas.width - textWidth) / 2;
-    ctx.fillText(description, textX, qrImage.height + 25);
-
-    // Convertir el canvas en una imagen
-    const compositeImage = canvas.toDataURL("image/png");
-
-    // Crear un enlace de descarga y simular un clic para descargar la imagen
-    const downloadLink = document.createElement("a");
-    downloadLink.href = compositeImage;
-    downloadLink.download = "qr_code_with_description.png";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
+    downloadQRCodeWithDescription(url, color, size, description);
   });
 });
