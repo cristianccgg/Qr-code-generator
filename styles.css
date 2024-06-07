@@ -10,7 +10,8 @@
   --main-green: #40b49d;
 }
 
-.main-container {
+main {
+  min-height: 100vh !important;
   background-color: var(--main-red);
 }
 
@@ -28,4 +29,25 @@
   width: 15%;
   height: 50px;
   background-color: white;
+}
+
+.qr-container {
+  background-color: white;
+}
+
+.description-text {
+  color: white;
+  font-size: 1.5rem;
+}
+
+.text {
+  color: white;
+}
+
+.btn {
+  background-color: var(--main-green);
+}
+
+.btn:hover {
+  background-color: black !important;
 }

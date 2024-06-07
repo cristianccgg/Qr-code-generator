@@ -126,7 +126,7 @@
                 </select>
               </div>
             </label>
-            <div>
+            <div class="mx-auto">
               <button
                 id="btn-changes"
                 class="btn btn-primary submit"
@@ -138,21 +138,23 @@
           </form>
         </section>
         <section
-          class="section-2 d-flex flex-column gap-2 p-2 align-items-center justify-content-between align-items-middle"
+          class="section-2 d-flex flex-column align-items-center p-2 justify-content-between align-items-middle"
         >
-          <p class="text">Your code will look like this</p>
+          <p class="description-text">Your code will look like this</p>
 
-          <div id="qr-container" class="qr-container">
+          <div id="qr-container" class="qr-container d-flex flex-column w-75 py-3 gap-2 align-items-center justify-content-between rounded-2">
             <div id="qr-code" class="qr-code"></div>
-          </div>
-          <div>
-            <h2 id="description-result" class="text-center">
-              Description text
-            </h2>
 
-            <p id="sizeText" class="text-center">Medium (256px * 256 px)</p>
+            <div>
+              <h2 id="description-result" class="text-center">
+                Description text
+              </h2>
+            </div>
           </div>
-          <div>
+
+            <p id="sizeText" class="text-center mt-3">Medium (256px * 256 px)</p>
+          
+          
             <button id="downloadBtn" class="btn btn-primary" type="button">
               DOWNLOAD QR
             </button>
