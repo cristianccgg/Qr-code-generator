@@ -10,6 +10,11 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,6 +22,11 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="/singup-styles.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
     <script
       defer
       src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
@@ -26,16 +36,16 @@
     ></script>
   </head>
   <body>
-    <main>
-      <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <main id="main">
+      <nav class="navbar navbar-expand-lg bg-body-tertiary px-1">
         <div class="container-fluid">
           <a class="navbar-brand" href="#">
             <img
               src="/images/a-modern-and-sleek-linear-icon-of-a-qr-code-in-a-v-2joqjbYSQZ2kq5NTVXcGOA-ImMrm9jTQBiAcUriC5p6bA.jpeg"
               alt="Logo"
-              width="70"
-              height="70"
-              class="d-inline-block align-text-middle"
+              width="60"
+              height="60"
+              class="d-inline-block align-text-middle rounded-2"
             />
             QR CODE GENERATOR
           </a>
@@ -51,117 +61,212 @@
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Home</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Features</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Pricing</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-              </li>
+            <ul class="navbar-nav ms-auto align-items-center gap-sm-2">
+              <button class="nav-btn-1 rounded-5 w-100 px-1">
+                <li id="login-btn" class="nav-item">
+                  <a class="nav-link nav-link-1 active text-nowrap" href="#"
+                    >LOG IN</a
+                  >
+                </li>
+              </button>
+              <button class="nav-btn-2 rounded-5 w-100 px-1">
+                <li id="signup-btn" class="nav-item">
+                  <a class="nav-link nav-link-2 active text-nowrap" href="#"
+                    >SIGN UP</a
+                  >
+                </li>
+              </button>
             </ul>
           </div>
         </div>
       </nav>
-      <!-- Fin Del Navbar -->
 
-      <div class="main-container d-md-flex">
-        <section class="section-1">
-          <form
-            action=""
-            id="form"
-            class="d-flex flex-column gap-2 p-2 justify-content-between"
-          >
-            <label class="text" for="input">
-              Write your URL here
-              <div class="d-flex justify-content-between gap-2">
-                <img class="icon rounded-2" src="./images/link-solid-2.svg" />
-                <input
-                  class="input"
-                  type="text"
-                  id="input"
-                  placeholder="URL here"
-                />
-              </div>
-            </label>
-            <label class="text" for="input-description">
-              Write description here (optional)
-              <div class="d-flex justify-content-between gap-2">
-                <img class="icon rounded-2" src="./images/pen-solid.svg" />
-                <input
-                  class="input"
-                  type="text"
-                  id="input-description"
-                  placeholder="QR CODE"
-                />
-              </div>
-            </label>
-            <label class="text" for="color">
-              Select QR color
-              <div class="d-flex justify-content-between gap-2">
-                <img class="icon rounded-2" src="./images/brush-solid.svg" />
-                <select id="color" class="input">
-                  <option value="#000000">Black</option>
-                  <option value="#f5576c">Design 1</option>
-                  <option value="#8538a6">Design 2</option>
-                  <option value="#7386bf">Design 3</option>
-                  <option value="#f2cb57">Design 4</option>
-                  <option value="#40B49D">Design 5</option>
-                </select>
-              </div>
-            </label>
-            <label class="text" for="size">
-              Select size
-              <div class="d-flex justify-content-between gap-2">
-                <img class="icon rounded-2" src="./images/expand-solid.svg" />
-                <select id="size" class="input">
-                  <option value="128">Small</option>
-                  <option value="256" selected>Medium</option>
-                  <option value="512">Large</option>
-                </select>
-              </div>
-            </label>
-            <div class="mx-auto">
-              <button
-                id="btn-changes"
-                class="btn btn-primary submit"
-                type="submit"
-              >
-                APPLY CHANGES
-              </button>
+      <h1 class="text-center mt-5 my-0 p-0">Customize your QR code</h1>
+      <div
+        class="main-container d-md-flex mx-sm-5 mt-sm-5 p-5 pt-0 justify-content-center"
+      >
+        <form
+          action="#"
+          id="form"
+          class="w-100 d-flex flex-column gap-2 p-2 justify-content-between"
+        >
+          <label class="text" for="input">
+            Write your URL here
+            <div class="d-flex justify-content-between gap-2">
+              <img class="icon rounded-2" src="./images/link-solid-2.svg" />
+              <input
+                class="input"
+                type="text"
+                id="input"
+                placeholder="URL here"
+              />
             </div>
-          </form>
-        </section>
+          </label>
+          <label class="text" for="input-description">
+            Write description here (optional)
+            <div class="d-flex justify-content-between gap-2">
+              <img class="icon rounded-2" src="./images/pen-solid.svg" />
+              <input
+                class="input"
+                type="text"
+                id="input-description"
+                placeholder="QR CODE"
+              />
+            </div>
+          </label>
+          <label class="text" for="color">
+            Select QR color
+            <div class="d-flex justify-content-between gap-2">
+              <img class="icon rounded-2" src="./images/brush-solid.svg" />
+              <select id="color" class="input">
+                <option value="#000000">Black</option>
+                <option value="#f5576c">Design 1</option>
+                <option value="#8538a6">Design 2</option>
+                <option value="#7386bf">Design 3</option>
+                <option value="#f2cb57">Design 4</option>
+                <option value="#40B49D">Design 5</option>
+              </select>
+            </div>
+          </label>
+          <label class="text" for="size">
+            Select size
+            <div class="d-flex justify-content-between gap-2">
+              <img class="icon rounded-2" src="./images/expand-solid.svg" />
+              <select id="size" class="input">
+                <option value="128">Small</option>
+                <option value="256" selected>Medium</option>
+                <option value="512">Large</option>
+              </select>
+            </div>
+          </label>
+          <div class="mx-auto">
+            <button
+              id="btn-changes"
+              class="btn btn-primary submit"
+              type="submit"
+            >
+              APPLY CHANGES
+            </button>
+          </div>
+        </form>
+
         <section
-          class="section-2 d-flex flex-column align-items-center p-2 justify-content-between align-items-middle"
+          class="w-100 section-2 d-flex flex-column align-items-center p-2 justify-content-between align-items-middle"
         >
           <p class="description-text">Your code will look like this</p>
-
-          <div id="qr-container" class="qr-container d-flex flex-column w-75 py-3 gap-2 align-items-center justify-content-between rounded-2">
+          <div
+            id="qr-container"
+            class="qr-container d-flex flex-column py-3 gap-2 align-items-center justify-content-between rounded-2"
+          >
             <div id="qr-code" class="qr-code"></div>
-
             <div>
               <h2 id="description-result" class="text-center">
                 Description text
               </h2>
             </div>
           </div>
-
-            <p id="sizeText" class="text-center mt-3">Medium (256px * 256 px)</p>
-          
-          
-            <button id="downloadBtn" class="btn btn-primary" type="button">
-              DOWNLOAD QR
-            </button>
-          </div>
+          <p id="sizeText" class="text text-center mt-3">
+            Medium (256px * 256px)
+          </p>
+          <button id="downloadBtn" class="btn btn-primary" type="button">
+            DOWNLOAD QR
+          </button>
         </section>
       </div>
+
+      <!-- SIGNUP CONTAINER -->
+      <div
+        id="signup-container"
+        class="signup-container d-none p-5 py-4 d-flex flex-column align-items-center gap-2 rounded-4 position-absolute top-50 start-50 translate-middle"
+      >
+        <button class="x-btn position-absolute top-0 end-0 mx-3 my-4">
+          <i class="bx bx-x-circle"></i>
+        </button>
+        <h1 class="text-center">Create your account</h1>
+        <div class="icons mb-3">
+          <i class="signup-icon bx bxl-google"></i>
+          <i class="signup-icon bx bxl-facebook"></i>
+          <i class="signup-icon bx bxl-linkedin"></i>
+        </div>
+        <form id="signup-form" class="signup-form" action="#">
+          <label for="signup-username"
+            ><i class="bx bx-user-circle"></i
+            ><input
+              type="text"
+              id="signup-username"
+              name="signup-username"
+              placeholder="Username"
+          /></label>
+          <label for="signup-email"
+            ><i class="bx bx-envelope"></i
+            ><input
+              type="email"
+              id="signup-email"
+              name="signup-email"
+              placeholder="Email"
+          /></label>
+          <label for="signup-password"
+            ><i class="bx bx-lock-alt"></i
+            ><input
+              type="text"
+              id="signup-password"
+              name="signup-password"
+              placeholder="Password"
+          /></label>
+          <button type="submit" class="mx-5 btn btn-primary">
+            Get Started
+          </button>
+        </form>
+
+        <p class="text mb-0">If you already have an account please log in</p>
+        <button id="login-toggle-btn" class="btn btn-primary">Log In</button>
+      </div>
+
+      <!-- LOG IN -->
+      <div
+        id="login-container"
+        class="login-container d-none p-5 py-4 d-flex flex-column align-items-center gap-2 rounded-4 position-absolute top-50 start-50 translate-middle"
+      >
+        <button class="x-btn position-absolute top-0 end-0 mx-5 my-4">
+          <i class="bx bx-x-circle"></i>
+        </button>
+        <h1>Log in</h1>
+        <div class="icons mb-3">
+          <i class="signup-icon bx bxl-google"></i>
+          <i class="signup-icon bx bxl-facebook"></i>
+          <i class="signup-icon bx bxl-linkedin"></i>
+        </div>
+        <form
+          id="login-form"
+          class="signup-form d-flex flex-column align-items-center"
+          action="#"
+        >
+          <label for="login-username"
+            ><i class="bx bx-user-circle"></i
+            ><input
+              type="text"
+              id="login-username"
+              name="login-username"
+              placeholder="Username"
+          /></label>
+          <label for="login-password"
+            ><i class="bx bx-lock-alt"></i
+            ><input
+              type="text"
+              id="login-password"
+              name="login-password"
+              placeholder="Password"
+          /></label>
+          <button type="submit" class="btn btn-primary">Log In</button>
+        </form>
+        <p class="text mb-0">
+          If you don't have an account yet please register
+        </p>
+        <button id="signup-toggle-btn" class="btn btn-primary">Sign Up</button>
+      </div>
     </main>
-    <script defer src="./Javascript/app.js"></script>
+    <script src="./Javascript/app.js"></script>
+    <script src="./Javascript/signup.js"></script>
+    <script src="/Javascript/login.js"></script>
   </body>
 </html>

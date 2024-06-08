@@ -15,8 +15,46 @@ main {
   background-color: var(--main-red);
 }
 
+.background-main {
+  background-color: #eeaab3;
+}
+
 .navbar-brand {
   font-size: 1rem;
+}
+
+.navbar-brand {
+  color: var(--main-red);
+  font-weight: 800;
+}
+
+.nav-btn-1 {
+  font-weight: 800;
+  background-color: white;
+  border: var(--main-red) 1px solid;
+}
+
+.nav-btn-2 {
+  font-weight: 800;
+  background-color: var(--main-red);
+  border: none;
+}
+
+.nav-link-1 {
+  color: var(--main-red) !important;
+}
+
+.nav-link-2 {
+  color: white !important;
+}
+
+.navbar-toggler {
+  color: var(--main-red) !important;
+  border: #f5576c 3px solid;
+}
+
+.section-2 {
+  height: 450px;
 }
 
 .input {
@@ -32,6 +70,8 @@ main {
 }
 
 .qr-container {
+  width: 350px;
+  min-width: 250px;
   background-color: white;
 }
 
@@ -44,7 +84,12 @@ main {
   color: white;
 }
 
+h1 {
+  color: white;
+}
+
 .btn {
+  width: 250px;
   background-color: var(--main-green);
 }
 
