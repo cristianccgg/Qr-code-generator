@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  qrCodes       QRCode[]
+  campaigns     Campaign[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// NextAuth Account model
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// NextAuth Session model
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// Campaign model to group QR codes
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  qrCodes     QRCode[]
+
+  @@map("campaigns")
+}
+
+// QR Code model - the main entity
+model QRCode {
+  id              String    @id @default(cuid())
+  shortId         String    @unique // Short ID for redirect URL (e.g., "abc123")
+
+  // QR Configuration
+  type            QRType
+  content         String    @db.Text // The actual content (URL, text, etc.)
+  description     String?
+
+  // Design options
+  color           String    @default("#000000")
+  backgroundColor String    @default("#FFFFFF")
+  size            Int       @default(512)
+  format          QRFormat  @default(PNG)
+  logoUrl         String?   @db.Text
+
+  // Dynamic QR features
+  isDynamic       Boolean   @default(true)
+  destinationUrl  String?   @db.Text // For dynamic QRs, the current destination
+
+  // Metadata
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaignId      String?
+  campaign        Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  scans           Scan[]
+
+  @@map("qr_codes")
+}
+
+enum QRType {
+  URL
+  TEXT
+  EMAIL
+  PHONE
+  SMS
+  WIFI
+  VCARD
+}
+
+enum QRFormat {
+  PNG
+  SVG
+}
+
+// Scan tracking model - records every scan
+model Scan {
+  id          String   @id @default(cuid())
+  qrCodeId    String
+  qrCode      QRCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+
+  // Analytics data
+  scannedAt   DateTime @default(now())
+
+  // Device & Browser info
+  userAgent   String?  @db.Text
+  deviceType  String?  // mobile, tablet, desktop
+  browser     String?
+  os          String?
+
+  // Location data
+  country     String?
+  city        String?
+  region      String?
+  latitude    Float?
+  longitude   Float?
+  ipAddress   String?
+
+  // Referrer
+  referrer    String?  @db.Text
+
+  @@map("scans")
+  @@index([qrCodeId])
+  @@index([scannedAt])
+}
