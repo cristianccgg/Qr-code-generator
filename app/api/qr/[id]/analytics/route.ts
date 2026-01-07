@@ -47,42 +47,42 @@ export async function GET(
     const totalScans = scans.length
 
     // Scans by date
-    const scansByDate = scans.reduce((acc: Record<string, number>, scan) => {
+    const scansByDate = scans.reduce((acc: Record<string, number>, scan: { scannedAt: Date }) => {
       const date = format(scan.scannedAt, 'yyyy-MM-dd')
       acc[date] = (acc[date] || 0) + 1
       return acc
     }, {})
 
     // Scans by device
-    const scansByDevice = scans.reduce((acc: Record<string, number>, scan) => {
+    const scansByDevice = scans.reduce((acc: Record<string, number>, scan: { deviceType: string | null }) => {
       const device = scan.deviceType || 'unknown'
       acc[device] = (acc[device] || 0) + 1
       return acc
     }, {})
 
     // Scans by browser
-    const scansByBrowser = scans.reduce((acc: Record<string, number>, scan) => {
+    const scansByBrowser = scans.reduce((acc: Record<string, number>, scan: { browser: string | null }) => {
       const browser = scan.browser || 'unknown'
       acc[browser] = (acc[browser] || 0) + 1
       return acc
     }, {})
 
     // Scans by OS
-    const scansByOS = scans.reduce((acc: Record<string, number>, scan) => {
+    const scansByOS = scans.reduce((acc: Record<string, number>, scan: { os: string | null }) => {
       const os = scan.os || 'unknown'
       acc[os] = (acc[os] || 0) + 1
       return acc
     }, {})
 
     // Scans by country
-    const scansByCountry = scans.reduce((acc: Record<string, number>, scan) => {
+    const scansByCountry = scans.reduce((acc: Record<string, number>, scan: { country: string | null }) => {
       const country = scan.country || 'unknown'
       acc[country] = (acc[country] || 0) + 1
       return acc
     }, {})
 
     // Scans by city (top 10)
-    const scansByCity = scans.reduce((acc: Record<string, number>, scan) => {
+    const scansByCity = scans.reduce((acc: Record<string, number>, scan: { city: string | null }) => {
       if (scan.city) {
         acc[scan.city] = (acc[scan.city] || 0) + 1
       }
