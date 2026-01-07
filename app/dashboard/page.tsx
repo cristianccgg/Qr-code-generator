@@ -133,7 +133,14 @@ export default async function DashboardPage() {
               </Link>
             </div>
           ) : (
-            recentQRCodes.map((qr) => (
+            recentQRCodes.map((qr: {
+              id: string;
+              description: string | null;
+              type: string;
+              createdAt: Date;
+              campaign: { name: string } | null;
+              _count: { scans: number };
+            }) => (
               <Link
                 key={qr.id}
                 href={`/dashboard/qr-codes/${qr.id}`}
