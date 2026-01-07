@@ -64,7 +64,11 @@ export default async function QRCodesPage() {
             </div>
             <div>
               <p className="text-3xl font-bold text-gray-900">
-                {qrCodes.reduce<number>((acc, qr) => acc + qr._count.scans, 0)}
+                {qrCodes.reduce(
+                  (acc: number, qr: (typeof qrCodes)[0]) =>
+                    acc + qr._count.scans,
+                  0
+                )}
               </p>
               <p className="text-sm text-gray-600">Total Scans</p>
             </div>
