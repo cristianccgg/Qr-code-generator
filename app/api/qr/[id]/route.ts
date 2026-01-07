@@ -65,6 +65,12 @@ export async function PATCH(
         ...body,
         userId: session.user.id, // Ensure user can't change ownership
       },
+      include: {
+        campaign: true,
+        _count: {
+          select: { scans: true },
+        },
+      },
     })
 
     return NextResponse.json(updated)

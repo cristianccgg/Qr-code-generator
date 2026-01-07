@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { QRConfig, QR_SIZES, QR_TYPES } from '@/types/qr';
 import { generateQRCode, downloadQRCodeWithDescription } from '@/lib/qr-generator';
@@ -12,6 +13,7 @@ interface QRPreviewProps {
 }
 
 export default function QRPreview({ config }: QRPreviewProps) {
+  const { data: session } = useSession();
   const [qrDataURL, setQrDataURL] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -70,8 +72,51 @@ export default function QRPreview({ config }: QRPreviewProps) {
       // Generar contenido según el tipo
       const content = generateQRContent(config);
 
+      // Si el usuario está logueado, guardar en la base de datos PRIMERO
+      let qrContent = content; // Por defecto, contenido directo
+      let shortId = null;
+
+      if (session?.user) {
+        try {
+          const response = await fetch('/api/qr/create', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: config.type,
+              content,
+              description: config.description,
+              color: config.color,
+              backgroundColor: config.backgroundColor,
+              size: config.size,
+              format: config.format,
+              logoUrl: config.logo, // Guardamos el data URL del logo
+              destinationUrl: content, // Para QR dinámicos
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to save QR code');
+          }
+
+          const data = await response.json();
+          shortId = data.qrCode.shortId;
+
+          // Para usuarios logueados, el QR apunta al shortURL dinámico
+          qrContent = `${window.location.origin}/r/${shortId}`;
+
+          console.log('QR code saved with shortId:', shortId);
+        } catch (saveError) {
+          console.error('Error saving QR code:', saveError);
+          // No bloqueamos la descarga si falla el guardado
+          setErrorMessage('QR code downloaded but could not be saved to your account');
+        }
+      }
+
+      // Descargar el QR code (con contenido dinámico si está logueado)
       await downloadQRCodeWithDescription({
-        content,
+        content: qrContent, // Usar shortURL si está logueado, o contenido directo si no
         color: config.color,
         backgroundColor: config.backgroundColor,
         size: config.size,
@@ -80,7 +125,11 @@ export default function QRPreview({ config }: QRPreviewProps) {
       }, config.format);
 
       // Mostrar mensaje de éxito
-      setSuccessMessage(`QR code downloaded successfully as ${config.format.toUpperCase()}!`);
+      if (session?.user) {
+        setSuccessMessage(`QR code downloaded and saved to your dashboard!`);
+      } else {
+        setSuccessMessage(`QR code downloaded successfully as ${config.format.toUpperCase()}!`);
+      }
 
       // Ocultar mensaje después de 3 segundos
       setTimeout(() => {
