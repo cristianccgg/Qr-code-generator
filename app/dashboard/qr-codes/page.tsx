@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { qRCode as QRCode } from "@prisma/client";
 import Link from "next/link";
 import { FiGrid, FiExternalLink, FiEye, FiCalendar } from "react-icons/fi";
 import { redirect } from "next/navigation";
@@ -12,7 +13,7 @@ export default async function QRCodesPage() {
     redirect("/auth/signin");
   }
 
-  const qrCodes = await prisma.qRCode.findMany({
+  const qrCodes = (await prisma.qRCode.findMany({
     where: { userId: session.user.id },
     include: {
       campaign: true,
@@ -21,7 +22,7 @@ export default async function QRCodesPage() {
       },
     },
     orderBy: { createdAt: "desc" },
-  });
+  })) as (QRCode & { _count: { scans: number }; campaign: any })[];
 
   return (
     <div className="space-y-8">
