@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { qRCode as QRCode } from "@prisma/client";
+import type { QRCode } from "@prisma/client";
 import Link from "next/link";
 import { FiGrid, FiExternalLink, FiEye, FiCalendar } from "react-icons/fi";
 import { redirect } from "next/navigation";
