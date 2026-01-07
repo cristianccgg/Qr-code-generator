@@ -90,7 +90,15 @@ export async function GET(
     }, {})
 
     // Get recent scans (last 10)
-    const recentScans = scans.slice(-10).reverse().map(scan => ({
+    const recentScans = scans.slice(-10).reverse().map((scan: {
+      id: string;
+      scannedAt: Date;
+      deviceType: string | null;
+      browser: string | null;
+      os: string | null;
+      country: string | null;
+      city: string | null;
+    }) => ({
       id: scan.id,
       scannedAt: scan.scannedAt,
       deviceType: scan.deviceType,
