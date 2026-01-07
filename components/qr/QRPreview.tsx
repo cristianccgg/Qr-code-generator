@@ -85,14 +85,15 @@ export default function QRPreview({ config }: QRPreviewProps) {
             },
             body: JSON.stringify({
               type: config.type,
-              content,
+              content, // La URL original del usuario
               description: config.description,
               color: config.color,
               backgroundColor: config.backgroundColor,
               size: config.size,
               format: config.format,
-              logoUrl: config.logo, // Guardamos el data URL del logo
-              destinationUrl: content, // Para QR dinámicos
+              logoUrl: config.logo,
+              destinationUrl: content, // La URL real para redireccionar
+              origin: window.location.origin, // Para construir el shortURL
             }),
           });
 
@@ -103,10 +104,10 @@ export default function QRPreview({ config }: QRPreviewProps) {
           const data = await response.json();
           shortId = data.qrCode.shortId;
 
-          // Para usuarios logueados, el QR apunta al shortURL dinámico
-          qrContent = `${window.location.origin}/r/${shortId}`;
+          // Usar el shortURL devuelto por el servidor (ya está guardado en la BD)
+          qrContent = data.qrCode.shortUrl;
 
-          console.log('QR code saved with shortId:', shortId);
+          console.log('QR code saved with shortUrl:', qrContent);
         } catch (saveError) {
           console.error('Error saving QR code:', saveError);
           // No bloqueamos la descarga si falla el guardado

@@ -128,15 +128,16 @@ async function downloadSVGWithDescription(
   options: GenerateQROptions,
   filename: string
 ): Promise<void> {
-  const { content, color, size, description } = options;
+  const { content, color, backgroundColor = '#ffffff', size, description } = options;
 
   // Generar SVG del QR
-  let svgString = await generateQRCodeSVG({ content, color, size });
+  let svgString = await generateQRCodeSVG({ content, color, backgroundColor, size });
 
   // Si hay descripción, modificar el SVG para agregarla
   if (description) {
-    const textHeight = 40;
-    const newHeight = size + textHeight;
+    const textHeight = 50; // Aumentado para mejor espaciado
+    const padding = 20;
+    const newHeight = size + textHeight + padding;
 
     // Modificar el SVG para agregar espacio y texto
     svgString = svgString.replace(
@@ -144,8 +145,13 @@ async function downloadSVGWithDescription(
       `height="${newHeight}"`
     );
 
+    svgString = svgString.replace(
+      /viewBox="[^"]*"/,
+      `viewBox="0 0 ${size} ${newHeight}"`
+    );
+
     // Agregar el texto antes del cierre del SVG
-    const textElement = `<text x="${size / 2}" y="${size + textHeight - 10}"
+    const textElement = `<text x="${size / 2}" y="${size + textHeight - 5}"
       text-anchor="middle"
       fill="${color}"
       font-family="Arial, sans-serif"

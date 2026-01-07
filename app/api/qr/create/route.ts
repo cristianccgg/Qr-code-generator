@@ -19,14 +19,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const {
       type,
-      content,
+      content, // La URL original del usuario (ej: https://cristiangart.com)
       description,
       color,
       backgroundColor,
       size,
       format,
       logoUrl,
-      destinationUrl,
+      destinationUrl, // Mismo que content, la URL real
+      origin, // El origin del cliente (para construir la URL completa)
     } = body
 
     // Validar campos requeridos
@@ -40,12 +41,15 @@ export async function POST(req: NextRequest) {
     // Generar shortId único
     const shortId = nanoid(8)
 
+    // Construir el shortURL completo
+    const shortUrl = `${origin || ''}/r/${shortId}`
+
     // Crear QR code en la base de datos
     const qrCode = await prisma.qRCode.create({
       data: {
         shortId,
         type: type.toUpperCase(),
-        content,
+        content: shortUrl, // El QR físico contiene el shortURL
         description,
         color: color || '#000000',
         backgroundColor: backgroundColor || '#FFFFFF',
@@ -53,7 +57,7 @@ export async function POST(req: NextRequest) {
         format: format?.toUpperCase() === 'SVG' ? 'SVG' : 'PNG',
         logoUrl,
         isDynamic: true,
-        destinationUrl: destinationUrl || content, // Para QR dinámicos
+        destinationUrl: destinationUrl || content, // La URL real a donde redirigir
         userId: session.user.id,
       },
     })
@@ -63,6 +67,7 @@ export async function POST(req: NextRequest) {
       qrCode: {
         id: qrCode.id,
         shortId: qrCode.shortId,
+        shortUrl, // Devolver la URL completa para el cliente
       },
     })
   } catch (error) {

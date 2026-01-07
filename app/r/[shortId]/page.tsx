@@ -14,25 +14,40 @@ export default async function RedirectPage({
       where: { shortId },
     })
 
+    console.log(`[Redirect] Looking for shortId: ${shortId}`)
+
     if (!qrCode) {
-      // QR code not found - redirect to home
+      console.log(`[Redirect] QR code not found for shortId: ${shortId}`)
       redirect('/')
     }
 
-    // Record scan (fire and forget - don't wait for it)
-    prisma.scan.create({
-      data: {
-        qrCodeId: qrCode.id,
-      },
-    }).catch((err) => {
-      console.error('Failed to record scan:', err)
+    console.log(`[Redirect] Found QR code:`, {
+      id: qrCode.id,
+      content: qrCode.content,
+      destinationUrl: qrCode.destinationUrl,
     })
+
+    // Record scan - AWAIT to ensure it's saved before redirect
+    try {
+      await prisma.scan.create({
+        data: {
+          qrCodeId: qrCode.id,
+          scannedAt: new Date(),
+        },
+      })
+      console.log(`[Redirect] Scan recorded for QR: ${qrCode.id}`)
+    } catch (scanError) {
+      console.error('[Redirect] Failed to record scan:', scanError)
+      // Don't block redirect even if scan fails
+    }
 
     // Redirect to destination URL
     const destination = qrCode.destinationUrl || qrCode.content
+    console.log(`[Redirect] Redirecting to: ${destination}`)
+
     redirect(destination)
   } catch (error) {
-    console.error('Error in redirect:', error)
+    console.error('[Redirect] Error in redirect:', error)
     redirect('/')
   }
 }
