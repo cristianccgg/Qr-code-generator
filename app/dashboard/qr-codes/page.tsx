@@ -3,8 +3,9 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { QRCode } from "@prisma/client";
 import Link from "next/link";
-import { FiGrid, FiExternalLink, FiEye, FiCalendar } from "react-icons/fi";
+import { FiGrid, FiEye, FiCalendar } from "react-icons/fi";
 import { redirect } from "next/navigation";
+import QRCodesList from "@/components/qr/QRCodesList";
 
 export default async function QRCodesPage() {
   const session = await getServerSession(authOptions);
@@ -103,86 +104,7 @@ export default async function QRCodesPage() {
           <h2 className="text-xl font-bold text-gray-900">All QR Codes</h2>
         </div>
 
-        {qrCodes.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FiGrid className="text-2xl text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No QR codes yet
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Create your first QR code to get started
-            </p>
-            <Link
-              href="/"
-              className="inline-block px-6 py-3 bg-gradient-to-r from-[#f5576c] to-[#f093fb] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
-            >
-              Create QR Code
-            </Link>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {qrCodes.map((qr) => (
-              <Link
-                key={qr.id}
-                href={`/dashboard/qr-codes/${qr.id}`}
-                className="p-6 hover:bg-gray-50 transition-colors block"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-gray-900 text-lg">
-                        {qr.description || "Untitled QR Code"}
-                      </h3>
-                      <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
-                        {qr.type}
-                      </span>
-                      {qr.campaign && (
-                        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">
-                          {qr.campaign.name}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <FiExternalLink className="text-[#f5576c]" />
-                        <span className="truncate max-w-md">
-                          {qr.destinationUrl || qr.content}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FiCalendar />
-                        <span>
-                          {new Date(qr.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-6 ml-4">
-                    <div className="text-right">
-                      <p className="text-3xl font-bold text-gray-900">
-                        {qr._count.scans}
-                      </p>
-                      <p className="text-xs text-gray-500">scans</p>
-                    </div>
-                    <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <div
-                        className="w-12 h-12 rounded"
-                        style={{
-                          backgroundColor: qr.backgroundColor,
-                          border: `2px solid ${qr.color}`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        <QRCodesList qrCodes={qrCodes} />
       </div>
     </div>
   );
