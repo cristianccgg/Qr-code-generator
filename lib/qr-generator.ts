@@ -133,32 +133,49 @@ async function downloadSVGWithDescription(
   // Generar SVG del QR
   let svgString = await generateQRCodeSVG({ content, color, backgroundColor, size });
 
+  // Extraer el viewBox original del QR generado
+  const viewBoxMatch = svgString.match(/viewBox="([^"]*)"/);
+  let viewBox = viewBoxMatch ? viewBoxMatch[1] : `0 0 ${size} ${size}`;
+
+  // Extraer las coordenadas del viewBox original
+  const viewBoxParts = viewBox.split(' ').map(Number);
+  const qrX = viewBoxParts[0] || 0;
+  const qrY = viewBoxParts[1] || 0;
+  const qrWidth = viewBoxParts[2] || size;
+  const qrHeight = viewBoxParts[3] || size;
+
   // Si hay descripción, modificar el SVG para agregarla
   if (description) {
-    const textHeight = 50; // Aumentado para mejor espaciado
-    const padding = 20;
-    const newHeight = size + textHeight + padding;
+    // Calcular tamaños proporcionales al QR (más pequeños)
+    const fontSize = Math.max(8, qrWidth * 0.025); // 2.5% del ancho del QR, mínimo 8
+    const textHeight = fontSize * 2.5; // Más espacio para el texto
+    const padding = fontSize; // Padding entre QR y texto
+    const newHeight = qrHeight + textHeight + padding;
 
-    // Modificar el SVG para agregar espacio y texto
-    svgString = svgString.replace(
-      /height="[^"]*"/,
-      `height="${newHeight}"`
-    );
+    // Crear nuevo viewBox que incluya el QR original y el espacio para el texto
+    const newViewBox = `${qrX} ${qrY} ${qrWidth} ${newHeight}`;
 
+    // Reemplazar el SVG con dimensiones y viewBox correctos
     svgString = svgString.replace(
-      /viewBox="[^"]*"/,
-      `viewBox="0 0 ${size} ${newHeight}"`
+      /<svg[^>]*>/,
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${qrWidth}" height="${newHeight}" viewBox="${newViewBox}">`
     );
 
     // Agregar el texto antes del cierre del SVG
-    const textElement = `<text x="${size / 2}" y="${size + textHeight - 5}"
+    const textElement = `<text x="${qrWidth / 2}" y="${qrHeight + padding + fontSize * 1.2}"
       text-anchor="middle"
       fill="${color}"
       font-family="Arial, sans-serif"
-      font-size="24"
+      font-size="${fontSize}"
       font-weight="bold">${description}</text>`;
 
     svgString = svgString.replace('</svg>', `${textElement}</svg>`);
+  } else {
+    // Sin descripción, solo asegurar que el SVG tenga dimensiones correctas
+    svgString = svgString.replace(
+      /<svg[^>]*>/,
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${qrWidth}" height="${qrHeight}" viewBox="${viewBox}">`
+    );
   }
 
   // Crear blob y descargar
