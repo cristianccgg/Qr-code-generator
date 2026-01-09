@@ -165,50 +165,37 @@ async function downloadSVGWithDescription(
 
   // Si hay descripción, modificar el SVG para agregarla
   if (description) {
-    // Mejor approach: incrustar el SVG original como una imagen dentro de
-    // un SVG contenedor. Esto preserva la escala y el posicionamiento del
-    // QR original y evita problemas con viewBox internos.
-    const outputWidth = size;
-    const fontSize = Math.max(8, Math.round(size * 0.046));
-    const textHeight = Math.round(fontSize * 1.6);
-    const padding = Math.round(fontSize * 0.6);
-    const newHeight = outputWidth + textHeight + padding;
+    // Extraer el viewBox del SVG original para preservar la escala
+    const viewBoxMatch = svgString.match(/viewBox="([^"]*)"/);
+    const originalViewBox = viewBoxMatch ? viewBoxMatch[1] : `0 0 ${qrWidth} ${qrHeight}`;
+    const [vbX, vbY, vbWidth, vbHeight] = originalViewBox.split(" ").map(Number);
 
-    // Generar una versión PNG rasterizada del QR (mejor para miniaturas)
-    const pngDataURL = await QRCode.toDataURL(content, {
-      width: size,
-      color: {
-        dark: color,
-        light: backgroundColor,
-      },
-      errorCorrectionLevel: "H",
-      margin: 1,
-    });
+    const outputWidth = vbWidth;
+    // Ajustar fontSize basándose en el viewBox, no en el tamaño físico
+    const fontSize = vbWidth * 0.05; // 5% del ancho del viewBox
+    const textHeight = fontSize * 1.8;
+    const padding = fontSize * 0.4;
+    const newHeight = vbHeight + textHeight + padding;
 
-    // Codificar el SVG original para usarlo como data URL (se colocará encima)
-    const encoded = encodeURIComponent(svgString)
-      .replace(/'/g, "%27")
-      .replace(/\(/g, "%28")
-      .replace(/\)/g, "%29");
+    // Extraer el contenido interno del SVG (paths y elementos)
+    const svgContentMatch = svgString.match(/<svg[^>]*>([\s\S]*)<\/svg>/);
+    const innerContent = svgContentMatch ? svgContentMatch[1] : '';
 
-    const imageHref = `data:image/svg+xml;utf8,${encoded}`;
+    const textY = vbHeight + padding + fontSize;
 
-    const textY = outputWidth + padding + Math.round(fontSize * 0.9);
-
-    const container = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${outputWidth}" height="${newHeight}" viewBox="0 0 ${outputWidth} ${newHeight}">
-        <rect width="100%" height="100%" fill="${backgroundColor}" />
-        <!-- PNG raster de respaldo para que los thumbnailers muestren una miniatura correcta -->
-        <image href="${pngDataURL}" x="0" y="0" width="${outputWidth}" height="${outputWidth}" preserveAspectRatio="xMidYMid slice" />
-        <!-- SVG vector encima (mantiene calidad al abrir) -->
-        <image href="${imageHref}" x="0" y="0" width="${outputWidth}" height="${outputWidth}" preserveAspectRatio="xMidYMid slice" />
-        <text x="${outputWidth / 2}" y="${textY}"
-          text-anchor="middle"
-          fill="${color}"
-          font-family="Arial, sans-serif"
-          font-size="${fontSize}px"
-          font-weight="bold">${description}</text>
-      </svg>`;
+    // Crear SVG contenedor con el contenido original embebido directamente (sin <image>)
+    const container = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${Math.round((newHeight / vbHeight) * size)}" viewBox="0 0 ${outputWidth} ${newHeight}">
+  <rect width="100%" height="100%" fill="${backgroundColor}" />
+  <g transform="translate(${vbX}, ${vbY})">
+${innerContent}
+  </g>
+  <text x="${outputWidth / 2}" y="${textY}"
+    text-anchor="middle"
+    fill="${color}"
+    font-family="Arial, sans-serif"
+    font-size="${fontSize}"
+    font-weight="bold">${description}</text>
+</svg>`;
 
     svgString = container;
   } else {
