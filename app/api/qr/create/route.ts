@@ -41,8 +41,22 @@ export async function POST(req: NextRequest) {
     // Generar shortId único
     const shortId = nanoid(8)
 
-    // Construir el shortURL completo
-    const shortUrl = `${origin || ''}/r/${shortId}`
+    // Normalizar el origin para asegurar que tenga el protocolo
+    let normalizedOrigin = origin || ''
+    if (normalizedOrigin && !/^https?:\/\//i.test(normalizedOrigin)) {
+      normalizedOrigin = 'https://' + normalizedOrigin
+    }
+
+    // Si no hay origin, usar el host del request
+    if (!normalizedOrigin) {
+      const host = req.headers.get('host') || 'localhost:3000'
+      normalizedOrigin = host.includes('localhost') ? `http://${host}` : `https://${host}`
+    }
+
+    // Construir el shortURL completo con protocolo explícito
+    const shortUrl = `${normalizedOrigin}/r/${shortId}`
+
+    console.log('[QR Create] Generated shortUrl:', shortUrl)
 
     // Crear QR code en la base de datos
     const qrCode = await prisma.qRCode.create({

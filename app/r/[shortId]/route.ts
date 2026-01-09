@@ -33,7 +33,13 @@ export async function GET(_request: Request, context: any) {
         console.error("[Redirect] Failed to record scan:", scanError)
       );
 
-    const destination = qrCode.destinationUrl || qrCode.content;
+    let destination = qrCode.destinationUrl || qrCode.content;
+
+    // Asegurar que la URL de destino tenga protocolo
+    if (destination && !/^https?:\/\//i.test(destination)) {
+      destination = 'https://' + destination;
+    }
+
     console.log(`[Redirect] Redirecting to: ${destination}`);
 
     return NextResponse.redirect(destination);
