@@ -1,22 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { nanoid } from 'nanoid'
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { nanoid } from "nanoid";
 
 export async function POST(req: NextRequest) {
   try {
     // Verificar autenticación
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json()
+    const body = await req.json();
     const {
       type,
       content, // La URL original del usuario (ej: https://cristiangart.com)
@@ -28,35 +25,39 @@ export async function POST(req: NextRequest) {
       logoUrl,
       destinationUrl, // Mismo que content, la URL real
       origin, // El origin del cliente (para construir la URL completa)
-    } = body
+    } = body;
 
     // Validar campos requeridos
     if (!type || !content) {
       return NextResponse.json(
-        { error: 'Type and content are required' },
+        { error: "Type and content are required" },
         { status: 400 }
-      )
+      );
     }
 
     // Generar shortId único
-    const shortId = nanoid(8)
+    const shortId = nanoid(8);
 
     // Normalizar el origin para asegurar que tenga el protocolo
-    let normalizedOrigin = origin || ''
+    let normalizedOrigin = origin || "";
     if (normalizedOrigin && !/^https?:\/\//i.test(normalizedOrigin)) {
-      normalizedOrigin = 'https://' + normalizedOrigin
+      normalizedOrigin = "https://" + normalizedOrigin;
     }
 
     // Si no hay origin, usar el host del request
     if (!normalizedOrigin) {
-      const host = req.headers.get('host') || 'localhost:3000'
-      normalizedOrigin = host.includes('localhost') ? `http://${host}` : `https://${host}`
+      const host = req.headers.get("host") || "localhost:3000";
+      normalizedOrigin = host.includes("localhost")
+        ? `http://${host}`
+        : `https://${host}`;
     }
 
     // Construir el shortURL completo con protocolo explícito
-    const shortUrl = `${normalizedOrigin}/r/${shortId}`
+    let shortUrl = `${normalizedOrigin}/r/${shortId}`;
+    // Quitar espacios o saltos de línea accidentales para asegurar que sea un único texto plano
+    shortUrl = shortUrl.trim().replace(/\s+/g, "");
 
-    console.log('[QR Create] Generated shortUrl:', shortUrl)
+    console.log("[QR Create] Generated shortUrl:", shortUrl);
 
     // Crear QR code en la base de datos
     const qrCode = await prisma.qRCode.create({
@@ -65,16 +66,16 @@ export async function POST(req: NextRequest) {
         type: type.toUpperCase(),
         content: shortUrl, // El QR físico contiene el shortURL
         description,
-        color: color || '#000000',
-        backgroundColor: backgroundColor || '#FFFFFF',
+        color: color || "#000000",
+        backgroundColor: backgroundColor || "#FFFFFF",
         size: size || 512,
-        format: format?.toUpperCase() === 'SVG' ? 'SVG' : 'PNG',
+        format: format?.toUpperCase() === "SVG" ? "SVG" : "PNG",
         logoUrl,
         isDynamic: true,
         destinationUrl: destinationUrl || content, // La URL real a donde redirigir
         userId: session.user.id,
       },
-    })
+    });
 
     return NextResponse.json({
       success: true,
@@ -83,12 +84,12 @@ export async function POST(req: NextRequest) {
         shortId: qrCode.shortId,
         shortUrl, // Devolver la URL completa para el cliente
       },
-    })
+    });
   } catch (error) {
-    console.error('Error creating QR code:', error)
+    console.error("Error creating QR code:", error);
     return NextResponse.json(
-      { error: 'Failed to create QR code' },
+      { error: "Failed to create QR code" },
       { status: 500 }
-    )
+    );
   }
 }
