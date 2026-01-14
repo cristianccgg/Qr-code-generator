@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { FiEdit2, FiSave, FiX, FiDownload, FiExternalLink, FiBarChart2, FiCalendar, FiEye, FiTrash2 } from 'react-icons/fi'
 import { generateQRCode } from '@/lib/qr-generator'
+import ScanHistory from '@/components/qr/ScanHistory'
 
 interface QRCode {
   id: string
@@ -401,6 +402,9 @@ export default function QRCodeDetailPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
       </div>
+
+      {/* Scan History */}
+      <ScanHistory qrCodeId={id} qrDescription={qrCode.description || undefined} />
     </div>
   )
 }
