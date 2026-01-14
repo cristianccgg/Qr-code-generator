@@ -26,6 +26,16 @@ export async function POST(req: NextRequest) {
       destinationUrl, // Mismo que content, la URL real
       origin, // El origin del cliente (para construir la URL completa)
       campaignId, // Campaña opcional
+      // Estilos avanzados
+      dotStyle,
+      cornerStyle,
+      cornerDotStyle,
+      cornerColor,
+      gradientEnabled,
+      gradientType,
+      gradientStart,
+      gradientEnd,
+      gradientRotation,
     } = body;
 
     // Validar campos requeridos
@@ -89,6 +99,16 @@ export async function POST(req: NextRequest) {
         destinationUrl: destinationUrl || content, // La URL real a donde redirigir
         userId: session.user.id,
         campaignId: campaignId || null,
+        // Estilos avanzados
+        dotStyle: dotStyle || "square",
+        cornerStyle: cornerStyle || "square",
+        cornerDotStyle: cornerDotStyle || "square",
+        cornerColor: cornerColor || null,
+        gradientEnabled: gradientEnabled || false,
+        gradientType: gradientType || "linear",
+        gradientStart: gradientStart || null,
+        gradientEnd: gradientEnd || null,
+        gradientRotation: gradientRotation || 0,
       },
     });
 

@@ -43,6 +43,16 @@ export default function QRPreview({ config }: QRPreviewProps) {
           backgroundColor: config.backgroundColor,
           size: 256,
           logo: config.logo,
+          // Estilos avanzados
+          dotStyle: config.dotStyle,
+          cornerStyle: config.cornerStyle,
+          cornerDotStyle: config.cornerDotStyle,
+          cornerColor: config.cornerColor,
+          gradientEnabled: config.gradientEnabled,
+          gradientType: config.gradientType,
+          gradientColorStart: config.gradientColorStart,
+          gradientColorEnd: config.gradientColorEnd,
+          gradientRotation: config.gradientRotation,
         });
         setQrDataURL(dataURL);
       } catch (error) {
@@ -95,6 +105,16 @@ export default function QRPreview({ config }: QRPreviewProps) {
               destinationUrl: content, // La URL real para redireccionar
               origin: window.location.origin, // Para construir el shortURL
               campaignId: config.campaignId, // Campaña opcional
+              // Estilos avanzados
+              dotStyle: config.dotStyle,
+              cornerStyle: config.cornerStyle,
+              cornerDotStyle: config.cornerDotStyle,
+              cornerColor: config.cornerColor,
+              gradientEnabled: config.gradientEnabled,
+              gradientType: config.gradientType,
+              gradientStart: config.gradientColorStart,
+              gradientEnd: config.gradientColorEnd,
+              gradientRotation: config.gradientRotation,
             }),
           });
 
@@ -124,6 +144,16 @@ export default function QRPreview({ config }: QRPreviewProps) {
         size: config.size,
         description: config.description,
         logo: config.logo,
+        // Estilos avanzados
+        dotStyle: config.dotStyle,
+        cornerStyle: config.cornerStyle,
+        cornerDotStyle: config.cornerDotStyle,
+        cornerColor: config.cornerColor,
+        gradientEnabled: config.gradientEnabled,
+        gradientType: config.gradientType,
+        gradientColorStart: config.gradientColorStart,
+        gradientColorEnd: config.gradientColorEnd,
+        gradientRotation: config.gradientRotation,
       }, config.format);
 
       // Mostrar mensaje de éxito

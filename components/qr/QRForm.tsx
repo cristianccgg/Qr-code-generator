@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { QR_SIZES, QR_FORMATS, QR_TYPES, QRConfig, QRType } from "@/types/qr";
-import { FiLink, FiEdit3, FiType, FiMail, FiPhone, FiMessageSquare, FiWifi, FiUser, FiLock, FiUpload, FiX, FiImage, FiFolder } from "react-icons/fi";
+import { QR_SIZES, QR_FORMATS, QR_TYPES, QRConfig, QRType, DOT_STYLES, CORNER_STYLES, DotStyle, CornerStyle } from "@/types/qr";
+import { FiLink, FiEdit3, FiType, FiMail, FiPhone, FiMessageSquare, FiWifi, FiUser, FiLock, FiUpload, FiX, FiImage, FiFolder, FiGrid, FiSquare, FiCircle } from "react-icons/fi";
 import Image from "next/image";
 import ColorPicker from "./ColorPicker";
 
@@ -520,6 +520,229 @@ export default function QRForm({
               ))}
             </select>
           </div>
+        </div>
+      </div>
+
+      {/* Advanced Style Options */}
+      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 space-y-4">
+        <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+          <FiGrid className="text-lg" />
+          Advanced Style
+        </h3>
+
+        {/* Dot Style Selector */}
+        <div>
+          <label className="block text-white text-xs font-medium mb-2">
+            Dot Style
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {DOT_STYLES.map((style) => (
+              <button
+                key={style.value}
+                type="button"
+                onClick={() => onConfigChange({ ...config, dotStyle: style.value as DotStyle })}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all ${
+                  (config.dotStyle || 'square') === style.value
+                    ? 'bg-white text-[#f5576c] border-white shadow-lg'
+                    : 'bg-white/5 text-white border-white/30 hover:bg-white/10 hover:border-white/50'
+                }`}
+              >
+                <div className="w-8 h-8 flex items-center justify-center">
+                  {style.value === 'square' && <FiSquare className="text-xl" />}
+                  {style.value === 'dots' && <FiCircle className="text-xl" />}
+                  {style.value === 'rounded' && (
+                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+                      <rect x="4" y="4" width="16" height="16" rx="4" />
+                    </svg>
+                  )}
+                  {style.value === 'extra-rounded' && (
+                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+                      <rect x="4" y="4" width="16" height="16" rx="8" />
+                    </svg>
+                  )}
+                  {style.value === 'classy' && (
+                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+                      <path d="M4 4h16v12a4 4 0 01-4 4H4V4z" />
+                    </svg>
+                  )}
+                  {style.value === 'classy-rounded' && (
+                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+                      <path d="M8 4h12v12a4 4 0 01-4 4H8a4 4 0 01-4-4V8a4 4 0 014-4z" />
+                    </svg>
+                  )}
+                </div>
+                <span className="text-[10px] font-medium">{style.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Corner Style Selector */}
+        <div>
+          <label className="block text-white text-xs font-medium mb-2">
+            Corner Style
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {CORNER_STYLES.map((style) => (
+              <button
+                key={style.value}
+                type="button"
+                onClick={() => onConfigChange({ ...config, cornerStyle: style.value as CornerStyle })}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all ${
+                  (config.cornerStyle || 'square') === style.value
+                    ? 'bg-white text-[#f5576c] border-white shadow-lg'
+                    : 'bg-white/5 text-white border-white/30 hover:bg-white/10 hover:border-white/50'
+                }`}
+              >
+                <div className="w-8 h-8 flex items-center justify-center">
+                  {style.value === 'square' && <FiSquare className="text-xl" />}
+                  {style.value === 'dot' && <FiCircle className="text-xl" />}
+                  {style.value === 'extra-rounded' && (
+                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+                      <rect x="4" y="4" width="16" height="16" rx="8" />
+                    </svg>
+                  )}
+                </div>
+                <span className="text-[10px] font-medium">{style.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Corner Color (optional) */}
+        <div>
+          <label className="block text-white text-xs font-medium mb-2">
+            Corner Color (optional - defaults to QR color)
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="useCornerColor"
+              checked={!!config.cornerColor}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  onConfigChange({ ...config, cornerColor: config.color });
+                } else {
+                  onConfigChange({ ...config, cornerColor: undefined });
+                }
+              }}
+              className="w-4 h-4 rounded"
+            />
+            <label htmlFor="useCornerColor" className="text-white/70 text-xs">
+              Use different color for corners
+            </label>
+          </div>
+          {config.cornerColor && (
+            <div className="mt-2">
+              <ColorPicker
+                color={config.cornerColor}
+                onChange={(color) => onConfigChange({ ...config, cornerColor: color })}
+                label=""
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Gradient Options */}
+        <div className="border-t border-white/20 pt-4">
+          <div className="flex items-center gap-2 mb-3">
+            <input
+              type="checkbox"
+              id="gradientEnabled"
+              checked={config.gradientEnabled || false}
+              onChange={(e) => {
+                onConfigChange({
+                  ...config,
+                  gradientEnabled: e.target.checked,
+                  gradientColorStart: e.target.checked ? config.color : undefined,
+                  gradientColorEnd: e.target.checked ? '#8538a6' : undefined,
+                  gradientType: 'linear',
+                  gradientRotation: 45,
+                });
+              }}
+              className="w-4 h-4 rounded"
+            />
+            <label htmlFor="gradientEnabled" className="text-white text-xs font-medium">
+              Enable Gradient
+            </label>
+          </div>
+
+          {config.gradientEnabled && (
+            <div className="space-y-3 animate-fadeIn">
+              {/* Gradient Type */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onConfigChange({ ...config, gradientType: 'linear' })}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    config.gradientType === 'linear'
+                      ? 'bg-white text-[#f5576c]'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  Linear
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onConfigChange({ ...config, gradientType: 'radial' })}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                    config.gradientType === 'radial'
+                      ? 'bg-white text-[#f5576c]'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  Radial
+                </button>
+              </div>
+
+              {/* Gradient Colors */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-white text-xs font-medium mb-1">Color 1</label>
+                  <ColorPicker
+                    color={config.gradientColorStart || config.color}
+                    onChange={(color) => onConfigChange({ ...config, gradientColorStart: color })}
+                    label=""
+                  />
+                </div>
+                <div>
+                  <label className="block text-white text-xs font-medium mb-1">Color 2</label>
+                  <ColorPicker
+                    color={config.gradientColorEnd || '#8538a6'}
+                    onChange={(color) => onConfigChange({ ...config, gradientColorEnd: color })}
+                    label=""
+                  />
+                </div>
+              </div>
+
+              {/* Gradient Rotation (only for linear) */}
+              {config.gradientType === 'linear' && (
+                <div>
+                  <label className="block text-white text-xs font-medium mb-1">
+                    Rotation: {config.gradientRotation || 0}°
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="360"
+                    value={config.gradientRotation || 0}
+                    onChange={(e) => onConfigChange({ ...config, gradientRotation: Number(e.target.value) })}
+                    className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white"
+                  />
+                </div>
+              )}
+
+              {/* Gradient Preview */}
+              <div
+                className="h-6 rounded-lg"
+                style={{
+                  background: config.gradientType === 'linear'
+                    ? `linear-gradient(${config.gradientRotation || 0}deg, ${config.gradientColorStart || config.color}, ${config.gradientColorEnd || '#8538a6'})`
+                    : `radial-gradient(circle, ${config.gradientColorStart || config.color}, ${config.gradientColorEnd || '#8538a6'})`
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
 

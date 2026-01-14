@@ -5,6 +5,12 @@ export type QRFormat = 'png' | 'svg';
 
 export type QRType = 'url' | 'text' | 'email' | 'phone' | 'sms' | 'wifi' | 'vcard';
 
+// Estilos avanzados de QR
+export type DotStyle = 'square' | 'dots' | 'rounded' | 'extra-rounded' | 'classy' | 'classy-rounded';
+export type CornerStyle = 'square' | 'dot' | 'extra-rounded';
+export type CornerDotStyle = 'square' | 'dot';
+export type GradientType = 'linear' | 'radial';
+
 export interface QRConfig {
   type: QRType;
   url: string;
@@ -29,6 +35,17 @@ export interface QRConfig {
   vcardPhone?: string;
   vcardEmail?: string;
   vcardOrganization?: string;
+  // Estilos avanzados
+  dotStyle?: DotStyle;
+  cornerStyle?: CornerStyle;
+  cornerDotStyle?: CornerDotStyle;
+  cornerColor?: string;
+  // Gradientes
+  gradientEnabled?: boolean;
+  gradientType?: GradientType;
+  gradientColorStart?: string;
+  gradientColorEnd?: string;
+  gradientRotation?: number; // 0-360 grados
 }
 
 export interface QRColorOption {
@@ -81,4 +98,42 @@ export const QR_TYPES: QRTypeOption[] = [
   { label: 'SMS', value: 'sms', description: 'Send a text message' },
   { label: 'WiFi', value: 'wifi', description: 'Connect to WiFi' },
   { label: 'Contact (vCard)', value: 'vcard', description: 'Save contact info' },
+];
+
+// Opciones de estilo de puntos
+export interface DotStyleOption {
+  label: string;
+  value: DotStyle;
+}
+
+export const DOT_STYLES: DotStyleOption[] = [
+  { label: 'Square', value: 'square' },
+  { label: 'Dots', value: 'dots' },
+  { label: 'Rounded', value: 'rounded' },
+  { label: 'Extra Rounded', value: 'extra-rounded' },
+  { label: 'Classy', value: 'classy' },
+  { label: 'Classy Rounded', value: 'classy-rounded' },
+];
+
+// Opciones de estilo de esquinas
+export interface CornerStyleOption {
+  label: string;
+  value: CornerStyle;
+}
+
+export const CORNER_STYLES: CornerStyleOption[] = [
+  { label: 'Square', value: 'square' },
+  { label: 'Dot', value: 'dot' },
+  { label: 'Rounded', value: 'extra-rounded' },
+];
+
+// Opciones de punto central de esquinas
+export interface CornerDotStyleOption {
+  label: string;
+  value: CornerDotStyle;
+}
+
+export const CORNER_DOT_STYLES: CornerDotStyleOption[] = [
+  { label: 'Square', value: 'square' },
+  { label: 'Dot', value: 'dot' },
 ];

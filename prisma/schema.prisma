@@ -99,6 +99,17 @@ model QRCode {
   format          QRFormat  @default(PNG)
   logoUrl         String?   @db.Text
 
+  // Advanced styling options
+  dotStyle         String?   @default("square")
+  cornerStyle      String?   @default("square")
+  cornerDotStyle   String?   @default("square")
+  cornerColor      String?
+  gradientEnabled  Boolean   @default(false)
+  gradientType     String?   @default("linear")
+  gradientStart    String?
+  gradientEnd      String?
+  gradientRotation Int?      @default(0)
+
   // Dynamic QR features
   isDynamic       Boolean   @default(true)
   destinationUrl  String?   @db.Text // For dynamic QRs, the current destination
