@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
       logoUrl,
       destinationUrl, // Mismo que content, la URL real
       origin, // El origin del cliente (para construir la URL completa)
+      campaignId, // Campaña opcional
     } = body;
 
     // Validar campos requeridos
@@ -59,6 +60,19 @@ export async function POST(req: NextRequest) {
 
     console.log("[QR Create] Generated shortUrl:", shortUrl);
 
+    // Validar que la campaña pertenece al usuario (si se especificó)
+    if (campaignId) {
+      const campaign = await prisma.campaign.findFirst({
+        where: { id: campaignId, userId: session.user.id },
+      });
+      if (!campaign) {
+        return NextResponse.json(
+          { error: "Campaign not found" },
+          { status: 404 }
+        );
+      }
+    }
+
     // Crear QR code en la base de datos
     const qrCode = await prisma.qRCode.create({
       data: {
@@ -74,6 +88,7 @@ export async function POST(req: NextRequest) {
         isDynamic: true,
         destinationUrl: destinationUrl || content, // La URL real a donde redirigir
         userId: session.user.id,
+        campaignId: campaignId || null,
       },
     });
 

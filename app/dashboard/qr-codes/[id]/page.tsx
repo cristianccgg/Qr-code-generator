@@ -4,9 +4,15 @@ import { use, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { FiEdit2, FiSave, FiX, FiDownload, FiExternalLink, FiBarChart2, FiCalendar, FiEye, FiTrash2 } from 'react-icons/fi'
+import { FiEdit2, FiSave, FiX, FiDownload, FiExternalLink, FiBarChart2, FiCalendar, FiEye, FiTrash2, FiFolder } from 'react-icons/fi'
+import Link from 'next/link'
 import { generateQRCode } from '@/lib/qr-generator'
 import ScanHistory from '@/components/qr/ScanHistory'
+
+interface Campaign {
+  id: string
+  name: string
+}
 
 interface QRCode {
   id: string
@@ -21,6 +27,8 @@ interface QRCode {
   logoUrl: string | null
   isDynamic: boolean
   destinationUrl: string | null
+  campaignId: string | null
+  campaign: Campaign | null
   createdAt: string
   updatedAt: string
   _count: {
@@ -42,6 +50,9 @@ export default function QRCodeDetailPage({ params }: { params: Promise<{ id: str
   const [errorMessage, setErrorMessage] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>('')
+  const [isSavingCampaign, setIsSavingCampaign] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -57,6 +68,7 @@ export default function QRCodeDetailPage({ params }: { params: Promise<{ id: str
         const data = await response.json()
         setQrCode(data)
         setEditedUrl(data.destinationUrl || data.content)
+        setSelectedCampaignId(data.campaignId || '')
 
         // Generate QR code image
         const qrImage = await generateQRCode({
@@ -75,8 +87,21 @@ export default function QRCodeDetailPage({ params }: { params: Promise<{ id: str
       }
     }
 
+    const fetchCampaigns = async () => {
+      try {
+        const response = await fetch('/api/campaigns')
+        if (response.ok) {
+          const data = await response.json()
+          setCampaigns(data)
+        }
+      } catch (error) {
+        console.error('Error fetching campaigns:', error)
+      }
+    }
+
     if (session) {
       fetchQRCode()
+      fetchCampaigns()
     }
   }, [id, session])
 
@@ -128,6 +153,35 @@ export default function QRCodeDetailPage({ params }: { params: Promise<{ id: str
     } catch (error) {
       console.error('Error downloading QR code:', error)
       setErrorMessage('Failed to download QR code')
+    }
+  }
+
+  const handleCampaignChange = async (newCampaignId: string) => {
+    setIsSavingCampaign(true)
+    setErrorMessage('')
+
+    try {
+      const response = await fetch(`/api/qr/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignId: newCampaignId || null,
+        }),
+      })
+
+      if (!response.ok) throw new Error('Failed to update campaign')
+
+      const updatedQR = await response.json()
+      setQrCode(updatedQR)
+      setSelectedCampaignId(newCampaignId)
+      setSuccessMessage('Campaign updated!')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error) {
+      console.error('Error updating campaign:', error)
+      setErrorMessage('Failed to update campaign')
+      setSelectedCampaignId(qrCode?.campaignId || '')
+    } finally {
+      setIsSavingCampaign(false)
     }
   }
 
@@ -365,6 +419,49 @@ export default function QRCodeDetailPage({ params }: { params: Promise<{ id: str
                 </a>
               </div>
             )}
+          </div>
+
+          {/* Campaign */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <FiFolder className="text-[#667eea] text-xl" />
+              <h2 className="text-xl font-bold text-gray-900">Campaign</h2>
+            </div>
+
+            <div className="space-y-3">
+              <select
+                value={selectedCampaignId}
+                onChange={(e) => handleCampaignChange(e.target.value)}
+                disabled={isSavingCampaign}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f5576c] focus:border-transparent disabled:opacity-50 disabled:bg-gray-100"
+              >
+                <option value="">No campaign</option>
+                {campaigns.map((campaign) => (
+                  <option key={campaign.id} value={campaign.id}>
+                    {campaign.name}
+                  </option>
+                ))}
+              </select>
+
+              {qrCode.campaign && (
+                <Link
+                  href={`/dashboard/campaigns/${qrCode.campaign.id}`}
+                  className="inline-flex items-center gap-2 text-sm text-[#f5576c] hover:underline"
+                >
+                  View campaign details
+                  <FiExternalLink className="text-xs" />
+                </Link>
+              )}
+
+              {campaigns.length === 0 && (
+                <p className="text-sm text-gray-500">
+                  No campaigns yet.{' '}
+                  <Link href="/dashboard/campaigns" className="text-[#f5576c] hover:underline">
+                    Create one
+                  </Link>
+                </p>
+              )}
+            </div>
           </div>
 
           {/* QR Code Details */}

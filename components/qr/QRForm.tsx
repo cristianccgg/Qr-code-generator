@@ -1,9 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { QR_SIZES, QR_FORMATS, QR_TYPES, QRConfig, QRType } from "@/types/qr";
-import { FiLink, FiEdit3, FiType, FiMail, FiPhone, FiMessageSquare, FiWifi, FiUser, FiLock, FiUpload, FiX, FiImage } from "react-icons/fi";
+import { FiLink, FiEdit3, FiType, FiMail, FiPhone, FiMessageSquare, FiWifi, FiUser, FiLock, FiUpload, FiX, FiImage, FiFolder } from "react-icons/fi";
 import Image from "next/image";
 import ColorPicker from "./ColorPicker";
+
+interface Campaign {
+  id: string;
+  name: string;
+}
 
 interface QRFormProps {
   config: QRConfig;
@@ -14,6 +21,29 @@ export default function QRForm({
   config,
   onConfigChange,
 }: QRFormProps) {
+  const { data: session } = useSession();
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
+
+  // Cargar campañas del usuario
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      if (!session) return;
+      setIsLoadingCampaigns(true);
+      try {
+        const response = await fetch('/api/campaigns');
+        if (response.ok) {
+          const data = await response.json();
+          setCampaigns(data);
+        }
+      } catch (error) {
+        console.error('Error fetching campaigns:', error);
+      } finally {
+        setIsLoadingCampaigns(false);
+      }
+    };
+    fetchCampaigns();
+  }, [session]);
 
   // Función helper para cambiar el tipo y limpiar campos
   const handleTypeChange = (newType: QRType) => {
@@ -337,6 +367,39 @@ export default function QRForm({
             />
           </div>
         </div>
+
+        {/* Campaign Selector (solo para usuarios logueados) */}
+        {session && (
+          <div className="animate-fadeIn">
+            <label htmlFor="campaign" className="block text-white text-sm font-semibold mb-2">
+              Campaign (optional)
+            </label>
+            <div className="flex gap-3">
+              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
+                <FiFolder className="text-white text-xl" />
+              </div>
+              <select
+                id="campaign"
+                value={config.campaignId || ''}
+                onChange={(e) => onConfigChange({ ...config, campaignId: e.target.value || undefined })}
+                disabled={isLoadingCampaigns}
+                className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+              >
+                <option value="">No campaign</option>
+                {campaigns.map((campaign) => (
+                  <option key={campaign.id} value={campaign.id}>
+                    {campaign.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {campaigns.length === 0 && !isLoadingCampaigns && (
+              <p className="text-white/50 text-xs mt-2 ml-[62px]">
+                No campaigns yet. Create one in the dashboard.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Customization Options */}

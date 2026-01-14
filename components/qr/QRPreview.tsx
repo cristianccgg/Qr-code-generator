@@ -94,6 +94,7 @@ export default function QRPreview({ config }: QRPreviewProps) {
               logoUrl: config.logo,
               destinationUrl: content, // La URL real para redireccionar
               origin: window.location.origin, // Para construir el shortURL
+              campaignId: config.campaignId, // Campaña opcional
             }),
           });
 

@@ -15,6 +15,8 @@ export interface QRConfig {
   format: QRFormat;
   // Logo/imagen en centro
   logo?: string; // Data URL de la imagen
+  // Campaña (opcional)
+  campaignId?: string;
   // Campos específicos para cada tipo
   text?: string;
   email?: string;
