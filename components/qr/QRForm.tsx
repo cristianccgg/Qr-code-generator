@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { QR_SIZES, QR_FORMATS, QR_TYPES, QRConfig, QRType, DOT_STYLES, CORNER_STYLES, DotStyle, CornerStyle } from "@/types/qr";
-import { FiLink, FiEdit3, FiType, FiMail, FiPhone, FiMessageSquare, FiWifi, FiUser, FiLock, FiUpload, FiX, FiImage, FiFolder, FiGrid, FiSquare, FiCircle } from "react-icons/fi";
+import { FiLink, FiEdit3, FiType, FiMail, FiPhone, FiMessageSquare, FiWifi, FiUser, FiLock, FiUpload, FiX, FiImage, FiFolder, FiDroplet, FiGrid, FiSquare, FiCircle } from "react-icons/fi";
 import Image from "next/image";
 import ColorPicker from "./ColorPicker";
 
@@ -17,6 +17,8 @@ interface QRFormProps {
   onConfigChange: (config: QRConfig) => void;
 }
 
+type CustomizationTab = 'colors' | 'style';
+
 export default function QRForm({
   config,
   onConfigChange,
@@ -24,6 +26,7 @@ export default function QRForm({
   const { data: session } = useSession();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
+  const [activeTab, setActiveTab] = useState<CustomizationTab>('colors');
 
   // Cargar campañas del usuario
   useEffect(() => {
@@ -65,36 +68,42 @@ export default function QRForm({
     });
   };
 
-  return (
-    <div className="w-full space-y-6 p-6">
-      {/* QR Type Selector - NUEVO */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-        <label className="block text-white text-sm font-semibold mb-3">
-          QR Code Type
-        </label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {QR_TYPES.map((type) => {
-            const Icon = type.value === 'url' ? FiLink :
-                        type.value === 'text' ? FiType :
-                        type.value === 'email' ? FiMail :
-                        type.value === 'phone' ? FiPhone :
-                        type.value === 'sms' ? FiMessageSquare :
-                        type.value === 'wifi' ? FiWifi :
-                        FiUser;
+  // Iconos para cada tipo
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'url': return FiLink;
+      case 'text': return FiType;
+      case 'email': return FiMail;
+      case 'phone': return FiPhone;
+      case 'sms': return FiMessageSquare;
+      case 'wifi': return FiWifi;
+      default: return FiUser;
+    }
+  };
 
+  return (
+    <div className="w-full space-y-4 p-6">
+      {/* QR Type Selector - Compacto */}
+      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+        <label className="block text-white text-xs font-semibold mb-2">
+          QR Type
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {QR_TYPES.map((type) => {
+            const Icon = getTypeIcon(type.value);
             return (
               <button
                 key={type.value}
                 type="button"
                 onClick={() => handleTypeChange(type.value)}
-                className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs ${
                   config.type === type.value
-                    ? 'bg-white text-[#f5576c] border-white shadow-lg scale-105'
-                    : 'bg-white/5 text-white border-white/30 hover:bg-white/10 hover:border-white/50'
+                    ? 'bg-white text-[#f5576c] border-white shadow-md font-semibold'
+                    : 'bg-white/5 text-white/80 border-white/20 hover:bg-white/10 hover:border-white/40'
                 }`}
               >
-                <Icon className="text-2xl" />
-                <span className="text-xs font-medium text-center">{type.label.split(' ')[0]}</span>
+                <Icon className="text-sm" />
+                <span>{type.label.split(' ')[0]}</span>
               </button>
             );
           })}
@@ -102,16 +111,16 @@ export default function QRForm({
       </div>
 
       {/* Campos dinámicos según el tipo */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {/* URL Type */}
         {config.type === 'url' && (
           <div className="animate-fadeIn">
             <label htmlFor="url" className="block text-white text-sm font-semibold mb-2">
               Website URL
             </label>
-            <div className="flex gap-3">
-              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                <FiLink className="text-white text-xl" />
+            <div className="flex gap-2">
+              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
+                <FiLink className="text-white text-lg" />
               </div>
               <input
                 type="text"
@@ -119,7 +128,7 @@ export default function QRForm({
                 value={config.url}
                 onChange={(e) => onConfigChange({ ...config, url: e.target.value })}
                 placeholder="https://example.com"
-                className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+                className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
               />
             </div>
           </div>
@@ -131,17 +140,17 @@ export default function QRForm({
             <label htmlFor="text" className="block text-white text-sm font-semibold mb-2">
               Text Content
             </label>
-            <div className="flex gap-3">
-              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                <FiType className="text-white text-xl" />
+            <div className="flex gap-2">
+              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
+                <FiType className="text-white text-lg" />
               </div>
               <textarea
                 id="text"
                 value={config.text || ''}
                 onChange={(e) => onConfigChange({ ...config, text: e.target.value })}
                 placeholder="Enter any text..."
-                rows={3}
-                className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all resize-none"
+                rows={2}
+                className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all resize-none text-sm"
               />
             </div>
           </div>
@@ -153,9 +162,9 @@ export default function QRForm({
             <label htmlFor="email" className="block text-white text-sm font-semibold mb-2">
               Email Address
             </label>
-            <div className="flex gap-3">
-              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                <FiMail className="text-white text-xl" />
+            <div className="flex gap-2">
+              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
+                <FiMail className="text-white text-lg" />
               </div>
               <input
                 type="email"
@@ -163,7 +172,7 @@ export default function QRForm({
                 value={config.email || ''}
                 onChange={(e) => onConfigChange({ ...config, email: e.target.value })}
                 placeholder="email@example.com"
-                className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+                className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
               />
             </div>
           </div>
@@ -175,9 +184,9 @@ export default function QRForm({
             <label htmlFor="phone" className="block text-white text-sm font-semibold mb-2">
               Phone Number
             </label>
-            <div className="flex gap-3">
-              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                <FiPhone className="text-white text-xl" />
+            <div className="flex gap-2">
+              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
+                <FiPhone className="text-white text-lg" />
               </div>
               <input
                 type="tel"
@@ -185,7 +194,7 @@ export default function QRForm({
                 value={config.phone || ''}
                 onChange={(e) => onConfigChange({ ...config, phone: e.target.value })}
                 placeholder="+1234567890"
-                className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+                className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
               />
             </div>
           </div>
@@ -197,9 +206,9 @@ export default function QRForm({
             <label htmlFor="sms" className="block text-white text-sm font-semibold mb-2">
               Phone Number (SMS)
             </label>
-            <div className="flex gap-3">
-              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                <FiMessageSquare className="text-white text-xl" />
+            <div className="flex gap-2">
+              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
+                <FiMessageSquare className="text-white text-lg" />
               </div>
               <input
                 type="tel"
@@ -207,7 +216,7 @@ export default function QRForm({
                 value={config.sms || ''}
                 onChange={(e) => onConfigChange({ ...config, sms: e.target.value })}
                 placeholder="+1234567890"
-                className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+                className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
               />
             </div>
           </div>
@@ -215,14 +224,14 @@ export default function QRForm({
 
         {/* WiFi Type */}
         {config.type === 'wifi' && (
-          <div className="animate-fadeIn space-y-4">
+          <div className="animate-fadeIn space-y-3">
             <div>
               <label htmlFor="wifiSSID" className="block text-white text-sm font-semibold mb-2">
                 Network Name (SSID)
               </label>
-              <div className="flex gap-3">
-                <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                  <FiWifi className="text-white text-xl" />
+              <div className="flex gap-2">
+                <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
+                  <FiWifi className="text-white text-lg" />
                 </div>
                 <input
                   type="text"
@@ -230,58 +239,60 @@ export default function QRForm({
                   value={config.wifiSSID || ''}
                   onChange={(e) => onConfigChange({ ...config, wifiSSID: e.target.value })}
                   placeholder="My WiFi Network"
-                  className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+                  className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
                 />
               </div>
             </div>
 
-            <div>
-              <label htmlFor="wifiPassword" className="block text-white text-sm font-semibold mb-2">
-                Password
-              </label>
-              <div className="flex gap-3">
-                <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                  <FiLock className="text-white text-xl" />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label htmlFor="wifiPassword" className="block text-white text-xs font-medium mb-1">
+                  Password
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-lg p-2 min-w-[36px]">
+                    <FiLock className="text-white text-sm" />
+                  </div>
+                  <input
+                    type="text"
+                    id="wifiPassword"
+                    value={config.wifiPassword || ''}
+                    onChange={(e) => onConfigChange({ ...config, wifiPassword: e.target.value })}
+                    placeholder="password"
+                    className="flex-1 px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                  />
                 </div>
-                <input
-                  type="text"
-                  id="wifiPassword"
-                  value={config.wifiPassword || ''}
-                  onChange={(e) => onConfigChange({ ...config, wifiPassword: e.target.value })}
-                  placeholder="password123"
-                  className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
-                />
               </div>
-            </div>
 
-            <div>
-              <label htmlFor="wifiEncryption" className="block text-white text-sm font-semibold mb-2">
-                Security Type
-              </label>
-              <select
-                id="wifiEncryption"
-                value={config.wifiEncryption || 'WPA'}
-                onChange={(e) => onConfigChange({ ...config, wifiEncryption: e.target.value as 'WPA' | 'WEP' | 'nopass' })}
-                className="w-full px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
-              >
-                <option value="WPA">WPA/WPA2</option>
-                <option value="WEP">WEP</option>
-                <option value="nopass">No Password</option>
-              </select>
+              <div>
+                <label htmlFor="wifiEncryption" className="block text-white text-xs font-medium mb-1">
+                  Security
+                </label>
+                <select
+                  id="wifiEncryption"
+                  value={config.wifiEncryption || 'WPA'}
+                  onChange={(e) => onConfigChange({ ...config, wifiEncryption: e.target.value as 'WPA' | 'WEP' | 'nopass' })}
+                  className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                >
+                  <option value="WPA">WPA/WPA2</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">None</option>
+                </select>
+              </div>
             </div>
           </div>
         )}
 
         {/* vCard Type */}
         {config.type === 'vcard' && (
-          <div className="animate-fadeIn space-y-4">
+          <div className="animate-fadeIn space-y-3">
             <div>
               <label htmlFor="vcardName" className="block text-white text-sm font-semibold mb-2">
                 Full Name *
               </label>
-              <div className="flex gap-3">
-                <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                  <FiUser className="text-white text-xl" />
+              <div className="flex gap-2">
+                <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
+                  <FiUser className="text-white text-lg" />
                 </div>
                 <input
                   type="text"
@@ -289,51 +300,42 @@ export default function QRForm({
                   value={config.vcardName || ''}
                   onChange={(e) => onConfigChange({ ...config, vcardName: e.target.value })}
                   placeholder="John Doe"
-                  className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+                  className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
                 />
               </div>
             </div>
 
-            <div>
-              <label htmlFor="vcardPhone" className="block text-white text-sm font-semibold mb-2">
-                Phone Number
-              </label>
-              <div className="flex gap-3">
-                <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                  <FiPhone className="text-white text-xl" />
-                </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label htmlFor="vcardPhone" className="block text-white text-xs font-medium mb-1">
+                  Phone
+                </label>
                 <input
                   type="tel"
                   id="vcardPhone"
                   value={config.vcardPhone || ''}
                   onChange={(e) => onConfigChange({ ...config, vcardPhone: e.target.value })}
                   placeholder="+1234567890"
-                  className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+                  className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
                 />
               </div>
-            </div>
-
-            <div>
-              <label htmlFor="vcardEmail" className="block text-white text-sm font-semibold mb-2">
-                Email Address
-              </label>
-              <div className="flex gap-3">
-                <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                  <FiMail className="text-white text-xl" />
-                </div>
+              <div>
+                <label htmlFor="vcardEmail" className="block text-white text-xs font-medium mb-1">
+                  Email
+                </label>
                 <input
                   type="email"
                   id="vcardEmail"
                   value={config.vcardEmail || ''}
                   onChange={(e) => onConfigChange({ ...config, vcardEmail: e.target.value })}
                   placeholder="john@example.com"
-                  className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+                  className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="vcardOrganization" className="block text-white text-sm font-semibold mb-2">
+              <label htmlFor="vcardOrganization" className="block text-white text-xs font-medium mb-1">
                 Organization
               </label>
               <input
@@ -342,7 +344,7 @@ export default function QRForm({
                 value={config.vcardOrganization || ''}
                 onChange={(e) => onConfigChange({ ...config, vcardOrganization: e.target.value })}
                 placeholder="Company Name"
-                className="w-full px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+                className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
               />
             </div>
           </div>
@@ -350,12 +352,12 @@ export default function QRForm({
 
         {/* Description (común para todos) */}
         <div>
-          <label htmlFor="description" className="block text-white text-sm font-semibold mb-2">
+          <label htmlFor="description" className="block text-white text-xs font-medium mb-1">
             Description (optional)
           </label>
-          <div className="flex gap-3">
-            <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-              <FiEdit3 className="text-white text-xl" />
+          <div className="flex gap-2">
+            <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-lg p-2 min-w-[36px]">
+              <FiEdit3 className="text-white text-sm" />
             </div>
             <input
               type="text"
@@ -363,7 +365,7 @@ export default function QRForm({
               value={config.description}
               onChange={(e) => onConfigChange({ ...config, description: e.target.value })}
               placeholder="Label for your QR code"
-              className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+              className="flex-1 px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
             />
           </div>
         </div>
@@ -371,19 +373,19 @@ export default function QRForm({
         {/* Campaign Selector (solo para usuarios logueados) */}
         {session && (
           <div className="animate-fadeIn">
-            <label htmlFor="campaign" className="block text-white text-sm font-semibold mb-2">
+            <label htmlFor="campaign" className="block text-white text-xs font-medium mb-1">
               Campaign (optional)
             </label>
-            <div className="flex gap-3">
-              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-3 min-w-[50px]">
-                <FiFolder className="text-white text-xl" />
+            <div className="flex gap-2">
+              <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-lg p-2 min-w-[36px]">
+                <FiFolder className="text-white text-sm" />
               </div>
               <select
                 id="campaign"
                 value={config.campaignId || ''}
                 onChange={(e) => onConfigChange({ ...config, campaignId: e.target.value || undefined })}
                 disabled={isLoadingCampaigns}
-                className="flex-1 px-4 py-3 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all"
+                className="flex-1 px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
               >
                 <option value="">No campaign</option>
                 {campaigns.map((campaign) => (
@@ -393,364 +395,373 @@ export default function QRForm({
                 ))}
               </select>
             </div>
-            {campaigns.length === 0 && !isLoadingCampaigns && (
-              <p className="text-white/50 text-xs mt-2 ml-[62px]">
-                No campaigns yet. Create one in the dashboard.
-              </p>
-            )}
           </div>
         )}
       </div>
 
-      {/* Customization Options */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 space-y-4">
-        <h3 className="text-white font-semibold text-sm mb-3">Customization</h3>
-
-        {/* Color Picker Avanzado */}
-        <ColorPicker
-          color={config.color}
-          onChange={(color) => onConfigChange({ ...config, color })}
-          label="QR Code Color"
-        />
-
-        {/* Background Color Picker */}
-        <ColorPicker
-          color={config.backgroundColor || '#FFFFFF'}
-          onChange={(color) => onConfigChange({ ...config, backgroundColor: color })}
-          label="Background Color"
-        />
-
-        {/* Logo Upload */}
-        <div>
-          <label className="block text-white text-xs font-medium mb-2">
-            Logo in Center (Optional)
-          </label>
-
-          {!config.logo ? (
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/30 rounded-xl hover:border-white/60 hover:bg-white/5 transition-all cursor-pointer group">
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <FiUpload className="w-10 h-10 text-white/60 group-hover:text-white/80 mb-2 transition-colors" />
-                <p className="text-sm text-white/60 group-hover:text-white/80 transition-colors">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
-                </p>
-                <p className="text-xs text-white/40">PNG, JPG or SVG (max 2MB)</p>
-              </div>
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    // Validar tamaño (2MB)
-                    if (file.size > 2 * 1024 * 1024) {
-                      alert('File too large. Maximum size is 2MB.');
-                      return;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      const dataUrl = event.target?.result as string;
-                      onConfigChange({ ...config, logo: dataUrl });
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
-              />
-            </label>
-          ) : (
-            <div className="relative w-full h-32 border-2 border-white/30 rounded-xl overflow-hidden bg-white/10 backdrop-blur">
-              <Image
-                src={config.logo}
-                alt="Logo"
-                fill
-                className="object-contain p-4"
-                unoptimized
-              />
-              <button
-                type="button"
-                onClick={() => onConfigChange({ ...config, logo: undefined })}
-                className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-                title="Remove logo"
-              >
-                <FiX className="w-4 h-4" />
-              </button>
-              <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/50 backdrop-blur rounded text-white text-xs">
-                <FiImage className="inline mr-1" />
-                Logo added
-              </div>
-            </div>
-          )}
+      {/* Customization Options con Tabs */}
+      <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 overflow-hidden">
+        {/* Tab Headers */}
+        <div className="flex border-b border-white/20">
+          <button
+            type="button"
+            onClick={() => setActiveTab('colors')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold transition-all ${
+              activeTab === 'colors'
+                ? 'bg-white/20 text-white'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <FiDroplet className="text-sm" />
+            Colors & Logo
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('style')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold transition-all ${
+              activeTab === 'style'
+                ? 'bg-white/20 text-white'
+                : 'text-white/60 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <FiGrid className="text-sm" />
+            Style
+          </button>
         </div>
 
-        {/* Size & Format en una sola línea */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="size" className="block text-white text-xs font-medium mb-2">
-              Size
-            </label>
-            <select
-              id="size"
-              value={config.size}
-              onChange={(e) => onConfigChange({ ...config, size: Number(e.target.value) })}
-              className="w-full px-3 py-3 bg-white/90 backdrop-blur rounded-xl border-none outline-none text-sm"
-            >
-              {QR_SIZES.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label.replace(' (', ' - ').replace('px)', '')}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="format" className="block text-white text-xs font-medium mb-2">
-              Format
-            </label>
-            <select
-              id="format"
-              value={config.format}
-              onChange={(e) => onConfigChange({ ...config, format: e.target.value as 'png' | 'svg' })}
-              className="w-full px-3 py-3 bg-white/90 backdrop-blur rounded-xl border-none outline-none text-sm"
-            >
-              {QR_FORMATS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Advanced Style Options */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 space-y-4">
-        <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
-          <FiGrid className="text-lg" />
-          Advanced Style
-        </h3>
-
-        {/* Dot Style Selector */}
-        <div>
-          <label className="block text-white text-xs font-medium mb-2">
-            Dot Style
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {DOT_STYLES.map((style) => (
-              <button
-                key={style.value}
-                type="button"
-                onClick={() => onConfigChange({ ...config, dotStyle: style.value as DotStyle })}
-                className={`flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all ${
-                  (config.dotStyle || 'square') === style.value
-                    ? 'bg-white text-[#f5576c] border-white shadow-lg'
-                    : 'bg-white/5 text-white border-white/30 hover:bg-white/10 hover:border-white/50'
-                }`}
-              >
-                <div className="w-8 h-8 flex items-center justify-center">
-                  {style.value === 'square' && <FiSquare className="text-xl" />}
-                  {style.value === 'dots' && <FiCircle className="text-xl" />}
-                  {style.value === 'rounded' && (
-                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-                      <rect x="4" y="4" width="16" height="16" rx="4" />
-                    </svg>
-                  )}
-                  {style.value === 'extra-rounded' && (
-                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-                      <rect x="4" y="4" width="16" height="16" rx="8" />
-                    </svg>
-                  )}
-                  {style.value === 'classy' && (
-                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-                      <path d="M4 4h16v12a4 4 0 01-4 4H4V4z" />
-                    </svg>
-                  )}
-                  {style.value === 'classy-rounded' && (
-                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-                      <path d="M8 4h12v12a4 4 0 01-4 4H8a4 4 0 01-4-4V8a4 4 0 014-4z" />
-                    </svg>
-                  )}
-                </div>
-                <span className="text-[10px] font-medium">{style.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Corner Style Selector */}
-        <div>
-          <label className="block text-white text-xs font-medium mb-2">
-            Corner Style
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {CORNER_STYLES.map((style) => (
-              <button
-                key={style.value}
-                type="button"
-                onClick={() => onConfigChange({ ...config, cornerStyle: style.value as CornerStyle })}
-                className={`flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all ${
-                  (config.cornerStyle || 'square') === style.value
-                    ? 'bg-white text-[#f5576c] border-white shadow-lg'
-                    : 'bg-white/5 text-white border-white/30 hover:bg-white/10 hover:border-white/50'
-                }`}
-              >
-                <div className="w-8 h-8 flex items-center justify-center">
-                  {style.value === 'square' && <FiSquare className="text-xl" />}
-                  {style.value === 'dot' && <FiCircle className="text-xl" />}
-                  {style.value === 'extra-rounded' && (
-                    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-                      <rect x="4" y="4" width="16" height="16" rx="8" />
-                    </svg>
-                  )}
-                </div>
-                <span className="text-[10px] font-medium">{style.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Corner Color (optional) */}
-        <div>
-          <label className="block text-white text-xs font-medium mb-2">
-            Corner Color (optional - defaults to QR color)
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="useCornerColor"
-              checked={!!config.cornerColor}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  onConfigChange({ ...config, cornerColor: config.color });
-                } else {
-                  onConfigChange({ ...config, cornerColor: undefined });
-                }
-              }}
-              className="w-4 h-4 rounded"
-            />
-            <label htmlFor="useCornerColor" className="text-white/70 text-xs">
-              Use different color for corners
-            </label>
-          </div>
-          {config.cornerColor && (
-            <div className="mt-2">
-              <ColorPicker
-                color={config.cornerColor}
-                onChange={(color) => onConfigChange({ ...config, cornerColor: color })}
-                label=""
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Gradient Options */}
-        <div className="border-t border-white/20 pt-4">
-          <div className="flex items-center gap-2 mb-3">
-            <input
-              type="checkbox"
-              id="gradientEnabled"
-              checked={config.gradientEnabled || false}
-              onChange={(e) => {
-                onConfigChange({
-                  ...config,
-                  gradientEnabled: e.target.checked,
-                  gradientColorStart: e.target.checked ? config.color : undefined,
-                  gradientColorEnd: e.target.checked ? '#8538a6' : undefined,
-                  gradientType: 'linear',
-                  gradientRotation: 45,
-                });
-              }}
-              className="w-4 h-4 rounded"
-            />
-            <label htmlFor="gradientEnabled" className="text-white text-xs font-medium">
-              Enable Gradient
-            </label>
-          </div>
-
-          {config.gradientEnabled && (
-            <div className="space-y-3 animate-fadeIn">
-              {/* Gradient Type */}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => onConfigChange({ ...config, gradientType: 'linear' })}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${
-                    config.gradientType === 'linear'
-                      ? 'bg-white text-[#f5576c]'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  Linear
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onConfigChange({ ...config, gradientType: 'radial' })}
-                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${
-                    config.gradientType === 'radial'
-                      ? 'bg-white text-[#f5576c]'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  Radial
-                </button>
+        {/* Tab Content */}
+        <div className="p-4">
+          {/* Colors & Logo Tab */}
+          {activeTab === 'colors' && (
+            <div className="space-y-4 animate-fadeIn">
+              {/* Color Pickers en grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <ColorPicker
+                  color={config.color}
+                  onChange={(color) => onConfigChange({ ...config, color })}
+                  label="QR Color"
+                />
+                <ColorPicker
+                  color={config.backgroundColor || '#FFFFFF'}
+                  onChange={(color) => onConfigChange({ ...config, backgroundColor: color })}
+                  label="Background"
+                />
               </div>
 
-              {/* Gradient Colors */}
+              {/* Logo Upload - Compacto */}
+              <div>
+                <label className="block text-white text-xs font-medium mb-2">
+                  Logo (Optional)
+                </label>
+                {!config.logo ? (
+                  <label className="flex items-center justify-center gap-3 w-full h-20 border-2 border-dashed border-white/30 rounded-xl hover:border-white/60 hover:bg-white/5 transition-all cursor-pointer group">
+                    <FiUpload className="w-6 h-6 text-white/60 group-hover:text-white/80 transition-colors" />
+                    <div className="text-left">
+                      <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors font-semibold">
+                        Click to upload
+                      </p>
+                      <p className="text-[10px] text-white/40">PNG, JPG (max 2MB)</p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 2 * 1024 * 1024) {
+                            alert('File too large. Maximum size is 2MB.');
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const dataUrl = event.target?.result as string;
+                            onConfigChange({ ...config, logo: dataUrl });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                ) : (
+                  <div className="relative w-full h-20 border-2 border-white/30 rounded-xl overflow-hidden bg-white/10 backdrop-blur">
+                    <Image
+                      src={config.logo}
+                      alt="Logo"
+                      fill
+                      className="object-contain p-2"
+                      unoptimized
+                    />
+                    <button
+                      type="button"
+                      onClick={() => onConfigChange({ ...config, logo: undefined })}
+                      className="absolute top-1 right-1 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                      title="Remove logo"
+                    >
+                      <FiX className="w-3 h-3" />
+                    </button>
+                    <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/50 backdrop-blur rounded text-white text-[10px]">
+                      <FiImage className="inline mr-1" />
+                      Logo added
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Size & Format */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-white text-xs font-medium mb-1">Color 1</label>
-                  <ColorPicker
-                    color={config.gradientColorStart || config.color}
-                    onChange={(color) => onConfigChange({ ...config, gradientColorStart: color })}
-                    label=""
-                  />
+                  <label htmlFor="size" className="block text-white text-xs font-medium mb-1">
+                    Size
+                  </label>
+                  <select
+                    id="size"
+                    value={config.size}
+                    onChange={(e) => onConfigChange({ ...config, size: Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-none outline-none text-sm"
+                  >
+                    {QR_SIZES.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label.replace(' (', ' - ').replace('px)', '')}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-white text-xs font-medium mb-1">Color 2</label>
-                  <ColorPicker
-                    color={config.gradientColorEnd || '#8538a6'}
-                    onChange={(color) => onConfigChange({ ...config, gradientColorEnd: color })}
-                    label=""
-                  />
+                  <label htmlFor="format" className="block text-white text-xs font-medium mb-1">
+                    Format
+                  </label>
+                  <select
+                    id="format"
+                    value={config.format}
+                    onChange={(e) => onConfigChange({ ...config, format: e.target.value as 'png' | 'svg' })}
+                    className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-none outline-none text-sm"
+                  >
+                    {QR_FORMATS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Style Tab */}
+          {activeTab === 'style' && (
+            <div className="space-y-4 animate-fadeIn">
+              {/* Dot Style Selector */}
+              <div>
+                <label className="block text-white text-xs font-medium mb-2">
+                  Dot Style
+                </label>
+                <div className="grid grid-cols-6 gap-1.5">
+                  {DOT_STYLES.map((style) => (
+                    <button
+                      key={style.value}
+                      type="button"
+                      onClick={() => onConfigChange({ ...config, dotStyle: style.value as DotStyle })}
+                      className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg border-2 transition-all ${
+                        (config.dotStyle || 'square') === style.value
+                          ? 'bg-white text-[#f5576c] border-white shadow-lg'
+                          : 'bg-white/5 text-white border-white/30 hover:bg-white/10 hover:border-white/50'
+                      }`}
+                      title={style.label}
+                    >
+                      <div className="w-6 h-6 flex items-center justify-center">
+                        {style.value === 'square' && <FiSquare className="text-base" />}
+                        {style.value === 'dots' && <FiCircle className="text-base" />}
+                        {style.value === 'rounded' && (
+                          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                            <rect x="4" y="4" width="16" height="16" rx="4" />
+                          </svg>
+                        )}
+                        {style.value === 'extra-rounded' && (
+                          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                            <rect x="4" y="4" width="16" height="16" rx="8" />
+                          </svg>
+                        )}
+                        {style.value === 'classy' && (
+                          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                            <path d="M4 4h16v12a4 4 0 01-4 4H4V4z" />
+                          </svg>
+                        )}
+                        {style.value === 'classy-rounded' && (
+                          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                            <path d="M8 4h12v12a4 4 0 01-4 4H8a4 4 0 01-4-4V8a4 4 0 014-4z" />
+                          </svg>
+                        )}
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Gradient Rotation (only for linear) */}
-              {config.gradientType === 'linear' && (
-                <div>
-                  <label className="block text-white text-xs font-medium mb-1">
-                    Rotation: {config.gradientRotation || 0}°
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="360"
-                    value={config.gradientRotation || 0}
-                    onChange={(e) => onConfigChange({ ...config, gradientRotation: Number(e.target.value) })}
-                    className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white"
-                  />
+              {/* Corner Style Selector */}
+              <div>
+                <label className="block text-white text-xs font-medium mb-2">
+                  Corner Style
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {CORNER_STYLES.map((style) => (
+                    <button
+                      key={style.value}
+                      type="button"
+                      onClick={() => onConfigChange({ ...config, cornerStyle: style.value as CornerStyle })}
+                      className={`flex items-center justify-center gap-2 p-2 rounded-lg border-2 transition-all ${
+                        (config.cornerStyle || 'square') === style.value
+                          ? 'bg-white text-[#f5576c] border-white shadow-lg'
+                          : 'bg-white/5 text-white border-white/30 hover:bg-white/10 hover:border-white/50'
+                      }`}
+                    >
+                      <div className="w-5 h-5 flex items-center justify-center">
+                        {style.value === 'square' && <FiSquare className="text-sm" />}
+                        {style.value === 'dot' && <FiCircle className="text-sm" />}
+                        {style.value === 'extra-rounded' && (
+                          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                            <rect x="4" y="4" width="16" height="16" rx="8" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-medium">{style.label}</span>
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
 
-              {/* Gradient Preview */}
-              <div
-                className="h-6 rounded-lg"
-                style={{
-                  background: config.gradientType === 'linear'
-                    ? `linear-gradient(${config.gradientRotation || 0}deg, ${config.gradientColorStart || config.color}, ${config.gradientColorEnd || '#8538a6'})`
-                    : `radial-gradient(circle, ${config.gradientColorStart || config.color}, ${config.gradientColorEnd || '#8538a6'})`
-                }}
-              />
+              {/* Corner Color (optional) - disabled when gradient is enabled */}
+              <div className={`space-y-2 ${config.gradientEnabled ? 'opacity-50' : ''}`}>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="useCornerColor"
+                    checked={!!config.cornerColor && !config.gradientEnabled}
+                    disabled={config.gradientEnabled}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        onConfigChange({ ...config, cornerColor: config.color });
+                      } else {
+                        onConfigChange({ ...config, cornerColor: undefined });
+                      }
+                    }}
+                    className="w-4 h-4 rounded"
+                  />
+                  <label htmlFor="useCornerColor" className="text-white/70 text-xs">
+                    Different corner color {config.gradientEnabled && '(disabled with gradient)'}
+                  </label>
+                </div>
+                {config.cornerColor && !config.gradientEnabled && (
+                  <div className="ml-6">
+                    <ColorPicker
+                      color={config.cornerColor}
+                      onChange={(color) => onConfigChange({ ...config, cornerColor: color })}
+                      label="Corner Color"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Gradient Options */}
+              <div className="border-t border-white/20 pt-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    id="gradientEnabled"
+                    checked={config.gradientEnabled || false}
+                    onChange={(e) => {
+                      onConfigChange({
+                        ...config,
+                        gradientEnabled: e.target.checked,
+                        gradientColorStart: e.target.checked ? config.color : undefined,
+                        gradientColorEnd: e.target.checked ? '#8538a6' : undefined,
+                        gradientType: 'linear',
+                        gradientRotation: 45,
+                        // Limpiar corner color cuando se activa gradiente
+                        cornerColor: e.target.checked ? undefined : config.cornerColor,
+                      });
+                    }}
+                    className="w-4 h-4 rounded"
+                  />
+                  <label htmlFor="gradientEnabled" className="text-white text-xs font-medium">
+                    Enable Gradient
+                  </label>
+                </div>
+
+                {config.gradientEnabled && (
+                  <div className="space-y-2 animate-fadeIn">
+                    {/* Gradient Type */}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onConfigChange({ ...config, gradientType: 'linear' })}
+                        className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-medium transition-all ${
+                          config.gradientType === 'linear'
+                            ? 'bg-white text-[#f5576c]'
+                            : 'bg-white/10 text-white hover:bg-white/20'
+                        }`}
+                      >
+                        Linear
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onConfigChange({ ...config, gradientType: 'radial' })}
+                        className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] font-medium transition-all ${
+                          config.gradientType === 'radial'
+                            ? 'bg-white text-[#f5576c]'
+                            : 'bg-white/10 text-white hover:bg-white/20'
+                        }`}
+                      >
+                        Radial
+                      </button>
+                    </div>
+
+                    {/* Gradient Colors */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <ColorPicker
+                        color={config.gradientColorStart || config.color}
+                        onChange={(color) => onConfigChange({ ...config, gradientColorStart: color })}
+                        label="Start"
+                      />
+                      <ColorPicker
+                        color={config.gradientColorEnd || '#8538a6'}
+                        onChange={(color) => onConfigChange({ ...config, gradientColorEnd: color })}
+                        label="End"
+                      />
+                    </div>
+
+                    {/* Gradient Rotation (only for linear) */}
+                    {config.gradientType === 'linear' && (
+                      <div>
+                        <label className="block text-white text-[10px] font-medium mb-1">
+                          Rotation: {config.gradientRotation || 0}°
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="360"
+                          value={config.gradientRotation || 0}
+                          onChange={(e) => onConfigChange({ ...config, gradientRotation: Number(e.target.value) })}
+                          className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white"
+                        />
+                      </div>
+                    )}
+
+                    {/* Gradient Preview */}
+                    <div
+                      className="h-4 rounded-lg"
+                      style={{
+                        background: config.gradientType === 'linear'
+                          ? `linear-gradient(${config.gradientRotation || 0}deg, ${config.gradientColorStart || config.color}, ${config.gradientColorEnd || '#8538a6'})`
+                          : `radial-gradient(circle, ${config.gradientColorStart || config.color}, ${config.gradientColorEnd || '#8538a6'})`
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
-      </div>
-
-      {/* Info text */}
-      <div className="text-center">
-        <p className="text-white/60 text-sm">
-          Your QR code updates automatically as you type ✨
-        </p>
       </div>
     </div>
   );
