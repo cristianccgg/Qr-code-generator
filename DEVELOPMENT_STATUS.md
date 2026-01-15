@@ -14,6 +14,9 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 - **Base de datos**: PostgreSQL (Supabase)
 - **Autenticación**: NextAuth.js v4
 - **QR Generation**: `qr-code-styling` (migrado desde `qrcode` básico)
+- **PDF Generation**: `jspdf`
+- **CSV Parsing**: `papaparse`
+- **ZIP Generation**: `jszip`
 
 ---
 
@@ -22,10 +25,10 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 ### 1. Generación de QR (Público)
 - [x] 7 tipos de QR: URL, Texto, Email, Teléfono, SMS, WiFi, vCard
 - [x] Preview en tiempo real mientras se escribe
-- [x] Descarga en PNG y SVG
+- [x] Descarga en PNG, SVG y PDF
 - [x] Logo/imagen en el centro del QR
 
-### 2. Estilos Avanzados de QR ✨ **NUEVO**
+### 2. Estilos Avanzados de QR
 - [x] **6 estilos de puntos**: Square, Dots, Rounded, Extra-rounded, Classy, Classy-rounded
 - [x] **3 estilos de esquinas**: Square, Dot, Rounded
 - [x] **Color de esquinas independiente** (deshabilitado cuando hay gradiente)
@@ -38,6 +41,7 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 - [x] Edición de URL destino (QR dinámicos)
 - [x] Borrado individual y masivo
 - [x] Historial de scans por QR
+- [x] **Export batch** (ZIP o PDF) de QRs seleccionados
 
 ### 4. Campañas
 - [x] Crear/editar/eliminar campañas
@@ -57,6 +61,20 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 - [x] Google OAuth (configurado)
 - [x] Roles (USER/ADMIN)
 
+### 7. Bulk Creation ✨ **NUEVO**
+- [x] UI para upload de archivo CSV (drag & drop)
+- [x] Parser de CSV con validación por fila
+- [x] Preview de datos antes de crear
+- [x] Generación en batch con progress bar
+- [x] Descarga de ZIP con todos los QRs
+- [x] Plantilla CSV descargable
+
+### 8. Exportación Profesional ✨ **NUEVO**
+- [x] PDF individual desde página principal
+- [x] PDF de etiquetas con 4 layouts (2x2, 2x4, 3x5, 4x6)
+- [x] Export modal con opciones (Labels PDF, Multi-page PDF, ZIP)
+- [x] Batch export desde dashboard (selección múltiple)
+
 ---
 
 ## Arquitectura de Archivos Clave
@@ -69,26 +87,43 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 │   │   │   ├── route.ts            # GET lista QRs
 │   │   │   ├── create/route.ts     # POST crear QR (con estilos)
 │   │   │   ├── [id]/route.ts       # GET/PATCH/DELETE QR individual
+│   │   │   ├── bulk-create/route.ts # POST creación masiva
 │   │   │   └── bulk-delete/route.ts
 │   │   ├── campaigns/              # CRUD campañas
 │   │   └── analytics/route.ts      # Analytics globales
-│   ├── dashboard/                  # Rutas protegidas
+│   ├── dashboard/
+│   │   ├── page.tsx                # Overview
+│   │   ├── qr-codes/               # Lista y detalle de QRs
+│   │   ├── bulk-create/            # Creación masiva desde CSV
+│   │   ├── labels/                 # Generador de etiquetas PDF
+│   │   ├── campaigns/              # Gestión de campañas
+│   │   └── analytics/              # Analytics globales
 │   └── r/[shortId]/route.ts        # Redirect + tracking
 │
 ├── components/qr/
 │   ├── QRForm.tsx                  # Formulario con tabs y estilos
-│   ├── QRPreview.tsx               # Preview + descarga
-│   ├── ColorPicker.tsx             # Selector de color (react-color)
-│   └── QRCodesList.tsx             # Lista en dashboard
+│   ├── QRPreview.tsx               # Preview + descarga (PNG/SVG/PDF)
+│   ├── QRCodesList.tsx             # Lista en dashboard + export
+│   ├── ColorPicker.tsx             # Selector de color
+│   ├── BulkUploader.tsx            # Upload de CSV
+│   ├── BulkPreviewTable.tsx        # Preview de datos CSV
+│   ├── BulkProgressBar.tsx         # Progreso de creación
+│   ├── BulkResultsSummary.tsx      # Resumen de resultados
+│   └── ExportModal.tsx             # Modal de exportación batch
 │
 ├── lib/
 │   ├── qr-generator.ts             # Generación con qr-code-styling
 │   ├── qr-content-generator.ts     # Formateo de contenido por tipo
+│   ├── pdf-generator.ts            # Generación de PDFs (single, labels, multi-page)
+│   ├── csv-parser.ts               # Parser y validador de CSV
+│   ├── csv-template.ts             # Generador de plantilla CSV
 │   ├── auth.ts                     # Configuración NextAuth
 │   └── prisma.ts                   # Cliente Prisma singleton
 │
 ├── types/
-│   └── qr.ts                       # Tipos y constantes de estilos
+│   ├── qr.ts                       # Tipos y constantes de estilos QR
+│   ├── bulk.ts                     # Tipos para bulk creation
+│   └── export.ts                   # Tipos para exportación (PDF, labels)
 │
 └── prisma/
     └── schema.prisma               # Modelos con campos de estilo
@@ -102,7 +137,7 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 model QRCode {
   // ... campos básicos ...
 
-  // Estilos avanzados (agregados en esta sesión)
+  // Estilos avanzados
   dotStyle         String?   @default("square")
   cornerStyle      String?   @default("square")
   cornerDotStyle   String?   @default("square")
@@ -119,21 +154,7 @@ model QRCode {
 
 ## Próximos Pasos (Roadmap)
 
-### Prioridad 1: Bulk Creation
-Crear múltiples QR codes desde CSV/Excel.
-- [ ] UI para upload de archivo CSV
-- [ ] Parser de CSV con validación
-- [ ] Generación en batch con progress bar
-- [ ] Descarga de ZIP con todos los QRs
-- [ ] Plantilla CSV descargable
-
-**Archivos a crear/modificar:**
-- `app/dashboard/bulk-create/page.tsx` - Nueva página
-- `app/api/qr/bulk-create/route.ts` - Endpoint de creación masiva
-- `components/qr/BulkUploader.tsx` - Componente de upload
-- `lib/csv-parser.ts` - Utilidad para parsear CSV
-
-### Prioridad 2: Landing Pages Integradas
+### Prioridad 1: Landing Pages Integradas
 Micro-páginas cuando se escanea el QR (estilo Linktree).
 - [ ] Modelo `LandingPage` en Prisma
 - [ ] Editor de landing page (drag & drop o bloques)
@@ -141,19 +162,13 @@ Micro-páginas cuando se escanea el QR (estilo Linktree).
 - [ ] Templates prediseñados
 - [ ] Analytics específicos de landing
 
-### Prioridad 3: Exportación Profesional
-- [ ] PDF con múltiples QRs para impresión
-- [ ] Formatos vectoriales (EPS)
-- [ ] Etiquetas con tamaños estándar
-- [ ] Batch export con estilos consistentes
-
-### Prioridad 4: API Pública
+### Prioridad 2: API Pública
 - [ ] Documentación de API
 - [ ] API keys por usuario
 - [ ] Rate limiting
 - [ ] Webhooks para eventos
 
-### Prioridad 5: Templates Prediseñados
+### Prioridad 3: Templates Prediseñados
 - [ ] Galería de templates por industria
 - [ ] Templates con frames/bordes decorativos
 - [ ] Guardar estilos como "mis templates"
@@ -171,6 +186,12 @@ Micro-páginas cuando se escanea el QR (estilo Linktree).
   - Logo con opciones avanzadas
 - Bien mantenida, usada en producción
 - Compatible con Next.js/React
+
+### ¿Por qué `jspdf` para PDFs?
+- Ligero (~280KB), client-side
+- No requiere servidor para generar PDFs
+- Suficiente para etiquetas y documentos simples
+- Buena documentación y comunidad
 
 ### Gradiente vs Corner Color
 - Son mutuamente excluyentes en la UI
@@ -219,7 +240,8 @@ GOOGLE_CLIENT_SECRET=    # Para OAuth (opcional)
 
 ## Notas para Próxima Sesión
 
-1. **Bulk Creation** es la siguiente prioridad - feature enterprise crítico
+1. **Landing Pages** es la siguiente prioridad - diferenciador clave vs competencia
 2. Los estilos ya se guardan en DB, listos para edición futura
 3. El generador (`lib/qr-generator.ts`) ya está preparado para recibir todas las opciones
 4. La UI del formulario usa tabs, fácil de extender con más opciones
+5. El sistema de exportación soporta múltiples formatos y layouts
