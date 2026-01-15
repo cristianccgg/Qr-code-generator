@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { FiHome, FiGrid, FiBarChart2, FiFolder, FiLogOut } from 'react-icons/fi'
+import { FiHome, FiGrid, FiBarChart2, FiFolder, FiLogOut, FiUploadCloud } from 'react-icons/fi'
 
 export default async function DashboardLayout({
   children,
@@ -37,6 +37,9 @@ export default async function DashboardLayout({
           </NavLink>
           <NavLink href="/dashboard/qr-codes" icon={FiGrid}>
             QR Codes
+          </NavLink>
+          <NavLink href="/dashboard/bulk-create" icon={FiUploadCloud}>
+            Bulk Create
           </NavLink>
           <NavLink href="/dashboard/campaigns" icon={FiFolder}>
             Campaigns
