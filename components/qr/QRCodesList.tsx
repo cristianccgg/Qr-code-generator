@@ -10,8 +10,10 @@ import {
   FiTrash2,
   FiCheckSquare,
   FiSquare,
+  FiDownload,
 } from "react-icons/fi";
 import type { QRCode } from "@prisma/client";
+import ExportModal from "./ExportModal";
 
 interface QRCodeWithCount extends QRCode {
   _count: { scans: number };
@@ -26,6 +28,7 @@ export default function QRCodesList({ qrCodes }: QRCodesListProps) {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   const toggleSelection = (id: string) => {
     setSelectedIds((prev) =>
@@ -111,14 +114,23 @@ export default function QRCodesList({ qrCodes }: QRCodesListProps) {
               selected
             </span>
           </div>
-          <button
-            onClick={handleBulkDelete}
-            disabled={isDeleting}
-            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <FiTrash2 />
-            {isDeleting ? "Deleting..." : "Delete Selected"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-all flex items-center gap-2"
+            >
+              <FiDownload />
+              Export
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FiTrash2 />
+              {isDeleting ? "Deleting..." : "Delete"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -224,6 +236,13 @@ export default function QRCodesList({ qrCodes }: QRCodesListProps) {
           );
         })}
       </div>
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        qrCodes={qrCodes.filter((qr) => selectedIds.includes(qr.id))}
+      />
     </>
   );
 }

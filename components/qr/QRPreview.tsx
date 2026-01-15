@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { QRConfig, QR_SIZES, QR_TYPES } from '@/types/qr';
 import { generateQRCode, downloadQRCodeWithDescription } from '@/lib/qr-generator';
 import { generateQRContent, validateQRContent } from '@/lib/qr-content-generator';
-import { FiCheckCircle, FiAlertCircle, FiDownload } from 'react-icons/fi';
+import { FiCheckCircle, FiAlertCircle, FiDownload, FiFile } from 'react-icons/fi';
+import { downloadSingleQRPDF } from '@/lib/pdf-generator';
 
 interface QRPreviewProps {
   config: QRConfig;
@@ -173,6 +174,57 @@ export default function QRPreview({ config }: QRPreviewProps) {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    // Validar contenido
+    const validation = validateQRContent(config);
+    if (!validation.isValid) {
+      setErrorMessage(validation.error || 'Please fill in the required fields');
+      return;
+    }
+
+    if (!qrDataURL) {
+      setErrorMessage('Please wait for QR code to generate');
+      return;
+    }
+
+    setSuccessMessage('');
+    setErrorMessage('');
+
+    try {
+      // Generar QR con el tamaño completo para el PDF
+      const content = generateQRContent(config);
+      const fullSizeQR = await generateQRCode({
+        content,
+        color: config.color,
+        backgroundColor: config.backgroundColor,
+        size: config.size,
+        logo: config.logo,
+        dotStyle: config.dotStyle,
+        cornerStyle: config.cornerStyle,
+        cornerDotStyle: config.cornerDotStyle,
+        cornerColor: config.cornerColor,
+        gradientEnabled: config.gradientEnabled,
+        gradientType: config.gradientType,
+        gradientColorStart: config.gradientColorStart,
+        gradientColorEnd: config.gradientColorEnd,
+        gradientRotation: config.gradientRotation,
+      });
+
+      // Descargar PDF
+      const filename = config.description
+        ? `${config.description.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
+        : 'qr-code.pdf';
+
+      await downloadSingleQRPDF(fullSizeQR, config.description, filename);
+
+      setSuccessMessage('PDF downloaded successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      setErrorMessage('Error generating PDF. Please try again.');
+    }
+  };
+
   const getSizeLabel = () => {
     const sizeOption = QR_SIZES.find((s) => s.value === config.size);
     return sizeOption ? sizeOption.label : 'Medium';
@@ -287,20 +339,33 @@ export default function QRPreview({ config }: QRPreviewProps) {
         )}
       </div>
 
-      {/* Download Button */}
-      <button
-        onClick={handleDownload}
-        disabled={!qrDataURL}
-        className="w-full max-w-md group relative px-8 py-4 bg-gradient-to-r from-[#f5576c] to-[#8538a6] text-white font-bold text-lg rounded-xl shadow-xl hover:shadow-2xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
-      >
-        {/* Shine effect */}
-        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+      {/* Download Buttons */}
+      <div className="w-full max-w-md flex gap-3">
+        {/* Main Download Button (PNG/SVG) */}
+        <button
+          onClick={handleDownload}
+          disabled={!qrDataURL}
+          className="flex-1 group relative px-6 py-4 bg-gradient-to-r from-[#f5576c] to-[#8538a6] text-white font-bold text-base rounded-xl shadow-xl hover:shadow-2xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+        >
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <span className="relative flex items-center justify-center gap-2">
+            <FiDownload className="text-lg" />
+            {config.format.toUpperCase()}
+          </span>
+        </button>
 
-        <span className="relative flex items-center justify-center gap-2">
-          <FiDownload className="text-xl" />
-          Download QR Code
-        </span>
-      </button>
+        {/* PDF Download Button */}
+        <button
+          onClick={handleDownloadPDF}
+          disabled={!qrDataURL}
+          className="px-6 py-4 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-bold text-base rounded-xl hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <span className="flex items-center justify-center gap-2">
+            <FiFile className="text-lg" />
+            PDF
+          </span>
+        </button>
+      </div>
     </div>
   );
 }
