@@ -37,6 +37,12 @@ export default function Navbar() {
 
           {/* Desktop buttons */}
           <div className="hidden md:flex items-center gap-3">
+            <Link
+              href="/pricing"
+              className="px-4 py-2.5 text-white font-semibold rounded-xl hover:bg-white/10 transition-all"
+            >
+              Pricing
+            </Link>
             {!loading && (
               <>
                 {session ? (
@@ -94,6 +100,13 @@ export default function Navbar() {
         {/* Mobile menu */}
         {isMenuOpen && !loading && (
           <div className="md:hidden pb-4 flex flex-col gap-2 animate-slideInUp">
+            <Link
+              href="/pricing"
+              className="w-full px-6 py-3 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-left"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Pricing
+            </Link>
             {session ? (
               // Usuario autenticado (mobile)
               <>

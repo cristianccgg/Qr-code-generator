@@ -1,6 +1,6 @@
 # QR Generator - Estado de Desarrollo
 
-## Última actualización: Enero 2025
+## Última actualización: Enero 2026
 
 ---
 
@@ -69,11 +69,18 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 - [x] Descarga de ZIP con todos los QRs
 - [x] Plantilla CSV descargable
 
-### 8. Exportación Profesional ✨ **NUEVO**
+### 8. Exportación Profesional
 - [x] PDF individual desde página principal
 - [x] PDF de etiquetas con 4 layouts (2x2, 2x4, 3x5, 4x6)
 - [x] Export modal con opciones (Labels PDF, Multi-page PDF, ZIP)
 - [x] Batch export desde dashboard (selección múltiple)
+
+### 9. Página de Precios ✨ **NUEVO**
+- [x] Página `/pricing` con diseño consistente
+- [x] 3 planes definidos: Free, Starter ($4/mes), Pro ($9/mes)
+- [x] Tabla comparativa de features
+- [x] Sección de FAQ
+- [x] Link en Navbar (desktop y móvil)
 
 ---
 
@@ -82,6 +89,7 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 ```
 ├── app/
 │   ├── page.tsx                    # Página principal (generador público)
+│   ├── pricing/page.tsx            # Página de precios
 │   ├── api/
 │   │   ├── qr/
 │   │   │   ├── route.ts            # GET lista QRs
@@ -154,24 +162,39 @@ model QRCode {
 
 ## Próximos Pasos (Roadmap)
 
-### Prioridad 1: Landing Pages Integradas
-Micro-páginas cuando se escanea el QR (estilo Linktree).
-- [ ] Modelo `LandingPage` en Prisma
-- [ ] Editor de landing page (drag & drop o bloques)
-- [ ] Opción de redirigir a landing en vez de URL
-- [ ] Templates prediseñados
-- [ ] Analytics específicos de landing
+### Prioridad 1: Sistema de Planes y Límites
+Implementar la lógica de planes para monetización.
+- [ ] Modelo `Subscription` en Prisma (plan, status, fechas)
+- [ ] Contadores por usuario (QRs dinámicos creados, scans del mes)
+- [ ] Middleware para verificar límites antes de crear/escanear
+- [ ] UI para mostrar uso actual vs límites del plan
+- [ ] Bloquear features según plan (analytics, bulk, etc.)
 
-### Prioridad 2: API Pública
-- [ ] Documentación de API
-- [ ] API keys por usuario
-- [ ] Rate limiting
-- [ ] Webhooks para eventos
+### Prioridad 2: Integración de Pagos (Lemon Squeezy)
+Merchant of Record para recibir pagos globales sin crear empresa en USA.
+- [ ] Crear cuenta en Lemon Squeezy
+- [ ] Configurar productos (Starter mensual/anual, Pro mensual/anual)
+- [ ] Integrar SDK de Lemon Squeezy
+- [ ] Webhooks para activar/cancelar suscripciones
+- [ ] Portal de cliente para gestionar suscripción
+
+**¿Por qué Lemon Squeezy?**
+- No requiere empresa, acepta individuos
+- Paga a Colombia via PayPal o transferencia
+- Maneja impuestos globales (IVA, sales tax)
+- Fee: 5% + $0.50 por transacción
+- API moderna, fácil integración con Next.js
 
 ### Prioridad 3: Templates Prediseñados
 - [ ] Galería de templates por industria
 - [ ] Templates con frames/bordes decorativos
 - [ ] Guardar estilos como "mis templates"
+
+### ~~Descartado: API Pública~~
+~~No es prioridad para el público objetivo (pequeños negocios, artistas, freelancers). Se puede considerar en el futuro si hay demanda.~~
+
+### ~~Descartado: Landing Pages Integradas~~
+~~Compite con Linktree y similares ya establecidos. Es un proyecto muy grande para el valor que agrega. Mejor enfocarse en el core: QR codes.~~
 
 ---
 
@@ -229,19 +252,54 @@ npx prisma migrate dev --name descripcion
 ## Variables de Entorno Requeridas
 
 ```env
+# Base de datos
 DATABASE_URL=            # PostgreSQL connection string
+
+# Autenticación
 NEXTAUTH_SECRET=         # Secret para NextAuth
 NEXTAUTH_URL=            # URL base (http://localhost:3000 en dev)
 GOOGLE_CLIENT_ID=        # Para OAuth (opcional)
 GOOGLE_CLIENT_SECRET=    # Para OAuth (opcional)
+
+# Pagos (futuro - Lemon Squeezy)
+# LEMON_SQUEEZY_API_KEY=       # API key de Lemon Squeezy
+# LEMON_SQUEEZY_STORE_ID=      # ID de la tienda
+# LEMON_SQUEEZY_WEBHOOK_SECRET= # Secret para verificar webhooks
 ```
+
+---
+
+## Modelo de Negocio Definido
+
+### Planes
+
+| Plan | Precio | QRs Dinámicos | Scans/mes | Features |
+|------|--------|---------------|-----------|----------|
+| **Free** | $0 | 3 | 500 | PNG 500px, estilos, logo |
+| **Starter** | $4/mes ($29/año) | 25 | 5,000 | + Analytics, SVG, PDF, Campañas |
+| **Pro** | $9/mes ($79/año) | 100 | Ilimitados | + Bulk creation, alta resolución |
+
+### Diferenciadores vs Competencia
+- **Precio más bajo**: $4/mes vs $5-7/mes de competidores
+- **Bulk creation accesible**: desde $9/mes vs $16+ en otros
+- **Free generoso**: 3 QRs dinámicos vs 1-3 en competidores
+- **Sin marca de agua** en ningún plan
+
+### Público Objetivo
+- Artistas y galerías
+- Pequeños comercios (cafeterías, tiendas)
+- Freelancers (tarjetas de presentación)
+- Eventos pequeños (bodas, conferencias)
+- Profesores y educadores
 
 ---
 
 ## Notas para Próxima Sesión
 
-1. **Landing Pages** es la siguiente prioridad - diferenciador clave vs competencia
+1. **Sistema de planes** es la siguiente prioridad - necesario antes de pagos
 2. Los estilos ya se guardan en DB, listos para edición futura
 3. El generador (`lib/qr-generator.ts`) ya está preparado para recibir todas las opciones
 4. La UI del formulario usa tabs, fácil de extender con más opciones
 5. El sistema de exportación soporta múltiples formatos y layouts
+6. **Lemon Squeezy** es la opción elegida para pagos (no requiere empresa en USA)
+7. La página de precios ya está lista en `/pricing`

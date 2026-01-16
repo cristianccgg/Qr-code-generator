@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
-import { QRConfig, QR_SIZES, QR_TYPES } from '@/types/qr';
+import { QRConfig, QR_TYPES } from '@/types/qr';
 import { generateQRCode, downloadQRCodeWithDescription } from '@/lib/qr-generator';
 import { generateQRContent, validateQRContent } from '@/lib/qr-content-generator';
 import { FiCheckCircle, FiAlertCircle, FiDownload, FiFile } from 'react-icons/fi';
@@ -19,16 +19,29 @@ export default function QRPreview({ config }: QRPreviewProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
 
-  // Generar QR code cuando cambie la configuración
+  // Generar QR code cuando cambie la configuración (con debounce)
   useEffect(() => {
-    const generateQR = async () => {
-      // Validar contenido antes de generar
-      const validation = validateQRContent(config);
-      if (!validation.isValid) {
-        setQrDataURL('');
-        return;
-      }
+    isMountedRef.current = true;
+
+    // Limpiar timer anterior
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Validar contenido antes de generar
+    const validation = validateQRContent(config);
+    console.log('QRPreview validation:', validation, 'config.url:', config.url);
+    if (!validation.isValid) {
+      setQrDataURL('');
+      return;
+    }
+
+    // Debounce de 300ms para evitar regenerar en cada tecla
+    debounceTimerRef.current = setTimeout(async () => {
+      if (!isMountedRef.current) return;
 
       setIsGenerating(true);
       setErrorMessage('');
@@ -55,17 +68,31 @@ export default function QRPreview({ config }: QRPreviewProps) {
           gradientColorEnd: config.gradientColorEnd,
           gradientRotation: config.gradientRotation,
         });
-        setQrDataURL(dataURL);
+
+        console.log('QR generated successfully, dataURL length:', dataURL?.length);
+        if (isMountedRef.current) {
+          setQrDataURL(dataURL);
+        }
       } catch (error) {
         console.error('Error generating QR:', error);
-        setErrorMessage('Error generating QR code');
-        setQrDataURL('');
+        if (isMountedRef.current) {
+          setErrorMessage('Error generating QR code');
+          setQrDataURL('');
+        }
       } finally {
-        setIsGenerating(false);
+        if (isMountedRef.current) {
+          setIsGenerating(false);
+        }
+      }
+    }, 300);
+
+    // Cleanup
+    return () => {
+      isMountedRef.current = false;
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
     };
-
-    generateQR();
   }, [config]);
 
   const handleDownload = async () => {
@@ -85,7 +112,6 @@ export default function QRPreview({ config }: QRPreviewProps) {
 
       // Si el usuario está logueado, guardar en la base de datos PRIMERO
       let qrContent = content; // Por defecto, contenido directo
-      let shortId = null;
 
       if (session?.user) {
         try {
@@ -124,7 +150,6 @@ export default function QRPreview({ config }: QRPreviewProps) {
           }
 
           const data = await response.json();
-          shortId = data.qrCode.shortId;
 
           // Usar el shortURL devuelto por el servidor (ya está guardado en la BD)
           qrContent = data.qrCode.shortUrl;
@@ -159,9 +184,9 @@ export default function QRPreview({ config }: QRPreviewProps) {
 
       // Mostrar mensaje de éxito
       if (session?.user) {
-        setSuccessMessage(`QR code downloaded and saved to your dashboard!`);
+        setSuccessMessage(`Downloaded & saved!`);
       } else {
-        setSuccessMessage(`QR code downloaded successfully as ${config.format.toUpperCase()}!`);
+        setSuccessMessage(`Downloaded!`);
       }
 
       // Ocultar mensaje después de 3 segundos
@@ -217,17 +242,12 @@ export default function QRPreview({ config }: QRPreviewProps) {
 
       await downloadSingleQRPDF(fullSizeQR, config.description, filename);
 
-      setSuccessMessage('PDF downloaded successfully!');
+      setSuccessMessage('PDF downloaded!');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error('Error downloading PDF:', error);
       setErrorMessage('Error generating PDF. Please try again.');
     }
-  };
-
-  const getSizeLabel = () => {
-    const sizeOption = QR_SIZES.find((s) => s.value === config.size);
-    return sizeOption ? sizeOption.label : 'Medium';
   };
 
   const getTypeLabel = () => {
@@ -236,120 +256,85 @@ export default function QRPreview({ config }: QRPreviewProps) {
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-6 p-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-white text-3xl font-bold">Preview</h2>
-        <p className="text-white/70 text-sm">Your QR code will look like this</p>
-      </div>
+    <div className="w-full flex flex-col items-center gap-3 lg:gap-6 p-4 lg:p-6">
+      {/* QR Container - Compacto en mobile, grande en desktop */}
+      <div className="relative w-full max-w-[220px] lg:max-w-[400px]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#40B49D]/20 to-[#f5576c]/20 rounded-2xl lg:rounded-3xl blur-xl"></div>
 
-      {/* QR Container - Modernizado */}
-      <div className="relative w-full max-w-md">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#40B49D]/20 to-[#f5576c]/20 rounded-3xl blur-xl"></div>
-
-        <div className="relative bg-white rounded-3xl p-8 shadow-2xl">
+        <div className="relative bg-white rounded-2xl lg:rounded-3xl p-3 lg:p-8 shadow-2xl">
           {/* Badge con tipo de QR */}
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-[#f5576c] to-[#8538a6] rounded-full">
-            <span className="text-white text-xs font-semibold">{getTypeLabel()}</span>
+          <div className="absolute -top-2.5 lg:-top-3 left-1/2 -translate-x-1/2 px-3 lg:px-4 py-1 lg:py-1.5 bg-gradient-to-r from-[#f5576c] to-[#8538a6] rounded-full">
+            <span className="text-white text-[10px] lg:text-xs font-semibold">{getTypeLabel()}</span>
           </div>
 
           {/* QR Code */}
-          <div className="flex flex-col items-center gap-6 mt-4">
+          <div className="flex flex-col items-center mt-2 lg:mt-4">
             {isGenerating ? (
-              <div className="w-64 h-64 flex items-center justify-center">
+              <div className="w-44 h-44 lg:w-80 lg:h-80 flex items-center justify-center">
                 <div className="relative">
-                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#f5576c]/30 border-t-[#f5576c]"></div>
-                  <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-[#f5576c]/20"></div>
+                  <div className="animate-spin rounded-full h-10 w-10 lg:h-16 lg:w-16 border-4 border-[#f5576c]/30 border-t-[#f5576c]"></div>
                 </div>
               </div>
             ) : qrDataURL ? (
-              <div className="relative group">
-                <div className="absolute -inset-2 bg-gradient-to-r from-[#40B49D] to-[#f5576c] rounded-2xl opacity-0 group-hover:opacity-100 blur transition-opacity"></div>
-                <div className="relative w-64 h-64 bg-white rounded-2xl p-2 shadow-lg">
-                  <Image
-                    src={qrDataURL}
-                    alt="QR Code"
-                    fill
-                    className="object-contain p-2"
-                    unoptimized
-                  />
-                </div>
+              <div className="w-44 h-44 lg:w-80 lg:h-80 bg-white rounded-xl lg:rounded-2xl shadow-lg flex items-center justify-center">
+                <img
+                  src={qrDataURL}
+                  alt="QR Code"
+                  className="w-full h-full object-contain p-1 lg:p-2"
+                />
               </div>
             ) : (
-              <div className="w-64 h-64 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-dashed border-gray-300">
-                <div className="text-center px-6">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-200 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-44 h-44 lg:w-80 lg:h-80 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl lg:rounded-2xl border-2 border-dashed border-gray-300">
+                <div className="text-center px-4">
+                  <div className="w-10 h-10 lg:w-16 lg:h-16 mx-auto mb-2 lg:mb-4 rounded-full bg-gray-200 flex items-center justify-center">
+                    <svg className="w-5 h-5 lg:w-8 lg:h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
-                  <p className="text-gray-400 text-sm font-medium">Fill in the form to generate</p>
-                  <p className="text-gray-400 text-xs mt-1">your QR code</p>
+                  <p className="text-gray-400 text-xs lg:text-sm font-medium">Enter content</p>
                 </div>
               </div>
             )}
 
-            {/* Description */}
+            {/* Description - Solo en desktop o si hay descripción */}
             {config.description && qrDataURL && (
-              <div className="text-center animate-fadeIn">
-                <h3 className="text-xl font-bold text-gray-800">{config.description}</h3>
+              <div className="text-center mt-3 lg:mt-6 animate-fadeIn">
+                <h3 className="text-sm lg:text-xl font-bold text-gray-800 truncate max-w-[200px] lg:max-w-none">{config.description}</h3>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Info Cards */}
-      <div className="w-full max-w-md grid grid-cols-2 gap-3">
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-          <p className="text-white/60 text-xs font-medium mb-1">Size</p>
-          <p className="text-white text-sm font-bold">{getSizeLabel()}</p>
-          <p className="text-white/40 text-xs">{config.size}×{config.size}px</p>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-          <p className="text-white/60 text-xs font-medium mb-1">Format</p>
-          <p className="text-white text-sm font-bold">{config.format.toUpperCase()}</p>
-          <p className="text-white/40 text-xs">
-            {config.format === 'png' ? 'Raster image' : 'Vector image'}
-          </p>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="w-full max-w-md space-y-3">
-        {/* Success Message */}
-        {successMessage && (
-          <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-5 py-4 rounded-xl shadow-lg animate-slideInUp">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-              <FiCheckCircle className="text-xl" />
+      {/* Messages - Compactos */}
+      {(successMessage || errorMessage) && (
+        <div className="w-full max-w-[280px] lg:max-w-md">
+          {successMessage && (
+            <div className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-2 rounded-xl shadow-lg animate-slideInUp">
+              <FiCheckCircle className="text-base" />
+              <p className="text-xs font-medium">{successMessage}</p>
             </div>
-            <p className="text-sm font-medium flex-1">{successMessage}</p>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {errorMessage && (
-          <div className="flex items-center gap-3 bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-4 rounded-xl shadow-lg animate-shake">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-              <FiAlertCircle className="text-xl" />
+          )}
+          {errorMessage && (
+            <div className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-2 rounded-xl shadow-lg animate-shake">
+              <FiAlertCircle className="text-base" />
+              <p className="text-xs font-medium flex-1">{errorMessage}</p>
             </div>
-            <p className="text-sm font-medium flex-1">{errorMessage}</p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
-      {/* Download Buttons */}
-      <div className="w-full max-w-md flex gap-3">
+      {/* Download Buttons - Compactos en mobile */}
+      <div className="w-full max-w-[280px] lg:max-w-md flex gap-2 lg:gap-3">
         {/* Main Download Button (PNG/SVG) */}
         <button
           onClick={handleDownload}
           disabled={!qrDataURL}
-          className="flex-1 group relative px-6 py-4 bg-gradient-to-r from-[#f5576c] to-[#8538a6] text-white font-bold text-base rounded-xl shadow-xl hover:shadow-2xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+          className="flex-1 group relative px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-[#f5576c] to-[#8538a6] text-white font-bold text-sm lg:text-base rounded-xl shadow-xl hover:shadow-2xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
         >
           <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           <span className="relative flex items-center justify-center gap-2">
-            <FiDownload className="text-lg" />
+            <FiDownload className="text-base lg:text-lg" />
             {config.format.toUpperCase()}
           </span>
         </button>
@@ -358,10 +343,10 @@ export default function QRPreview({ config }: QRPreviewProps) {
         <button
           onClick={handleDownloadPDF}
           disabled={!qrDataURL}
-          className="px-6 py-4 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-bold text-base rounded-xl hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+          className="px-4 lg:px-6 py-3 lg:py-4 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-bold text-sm lg:text-base rounded-xl hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
         >
-          <span className="flex items-center justify-center gap-2">
-            <FiFile className="text-lg" />
+          <span className="flex items-center justify-center gap-1.5 lg:gap-2">
+            <FiFile className="text-base lg:text-lg" />
             PDF
           </span>
         </button>
