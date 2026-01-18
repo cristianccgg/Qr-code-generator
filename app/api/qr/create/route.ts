@@ -36,6 +36,10 @@ export async function POST(req: NextRequest) {
       gradientStart,
       gradientEnd,
       gradientRotation,
+      // Frame
+      frameId,
+      frameColor,
+      frameText,
     } = body;
 
     // Validar campos requeridos
@@ -109,6 +113,10 @@ export async function POST(req: NextRequest) {
         gradientStart: gradientStart || null,
         gradientEnd: gradientEnd || null,
         gradientRotation: gradientRotation || 0,
+        // Frame
+        frameId: frameId || null,
+        frameColor: frameColor || null,
+        frameText: frameText || null,
       },
     });
 

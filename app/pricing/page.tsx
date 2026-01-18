@@ -27,6 +27,7 @@ const plans = [
     cta: 'Get Started Free',
     ctaLink: '/auth/signup',
     popular: false,
+    badge: undefined,
   },
   {
     name: 'Starter',
@@ -52,6 +53,7 @@ const plans = [
     cta: 'Start Starter Plan',
     ctaLink: '/auth/signup?plan=starter',
     popular: true,
+    badge: undefined,
   },
   {
     name: 'Pro',
@@ -77,6 +79,7 @@ const plans = [
     cta: 'Start Pro Plan',
     ctaLink: '/auth/signup?plan=pro',
     popular: false,
+    badge: undefined,
   },
 ];
 

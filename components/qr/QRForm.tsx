@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { QR_SIZES, QR_FORMATS, QR_TYPES, QRConfig, QRType, DOT_STYLES, CORNER_STYLES, DotStyle, CornerStyle } from "@/types/qr";
-import { FiLink, FiEdit3, FiType, FiMail, FiPhone, FiMessageSquare, FiWifi, FiUser, FiLock, FiUpload, FiX, FiImage, FiFolder, FiDroplet, FiGrid, FiSquare, FiCircle, FiFileText, FiSliders } from "react-icons/fi";
+import { QRTemplate } from "@/types/templates";
+import { FiLink, FiEdit3, FiType, FiMail, FiPhone, FiMessageSquare, FiWifi, FiUser, FiLock, FiUpload, FiX, FiImage, FiFolder, FiDroplet, FiGrid, FiSquare, FiCircle, FiFileText, FiSliders, FiLayout } from "react-icons/fi";
+import TemplatesTab from "./templates/TemplatesTab";
 import Image from "next/image";
 import ColorPicker from "./ColorPicker";
 
@@ -18,7 +20,7 @@ interface QRFormProps {
 }
 
 type MainTab = 'content' | 'design';
-type DesignTab = 'colors' | 'style';
+type DesignTab = 'colors' | 'style' | 'templates';
 
 export default function QRForm({
   config,
@@ -465,6 +467,18 @@ export default function QRForm({
                 <FiGrid className="text-sm" />
                 Style
               </button>
+              <button
+                type="button"
+                onClick={() => setDesignTab('templates')}
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  designTab === 'templates'
+                    ? 'bg-white text-[#f5576c] shadow-lg'
+                    : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                }`}
+              >
+                <FiLayout className="text-sm" />
+                Templates
+              </button>
             </div>
 
             {/* Colors Tab Content */}
@@ -796,6 +810,48 @@ export default function QRForm({
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Templates Tab Content */}
+            <div className={designTab === 'templates' ? 'block' : 'hidden'}>
+              <TemplatesTab
+                config={config}
+                onApplyTemplate={(template: QRTemplate) => {
+                  onConfigChange({
+                    ...config,
+                    color: template.style.color,
+                    backgroundColor: template.style.backgroundColor,
+                    dotStyle: template.style.dotStyle,
+                    cornerStyle: template.style.cornerStyle,
+                    cornerDotStyle: template.style.cornerDotStyle,
+                    cornerColor: template.style.cornerColor,
+                    gradientEnabled: template.style.gradientEnabled,
+                    gradientType: template.style.gradientType,
+                    gradientColorStart: template.style.gradientColorStart,
+                    gradientColorEnd: template.style.gradientColorEnd,
+                    gradientRotation: template.style.gradientRotation,
+                    frameId: template.frameId,
+                    frameColor: template.frameColor,
+                    frameText: template.frameText,
+                  });
+                }}
+                onApplyFrame={(frameId, color, text) => {
+                  onConfigChange({
+                    ...config,
+                    frameId,
+                    frameColor: color,
+                    frameText: text,
+                  });
+                }}
+                onClearFrame={() => {
+                  onConfigChange({
+                    ...config,
+                    frameId: undefined,
+                    frameColor: undefined,
+                    frameText: undefined,
+                  });
+                }}
+              />
             </div>
           </div>
         </div>

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { QRConfig, QR_TYPES } from '@/types/qr';
 import { generateQRCode, downloadQRCodeWithDescription } from '@/lib/qr-generator';
 import { generateQRContent, validateQRContent } from '@/lib/qr-content-generator';
+import { renderWithFramePNG } from '@/lib/frame-renderer';
 import { FiCheckCircle, FiAlertCircle, FiDownload, FiFile } from 'react-icons/fi';
 import { downloadSingleQRPDF } from '@/lib/pdf-generator';
 
@@ -51,7 +52,7 @@ export default function QRPreview({ config }: QRPreviewProps) {
         const content = generateQRContent(config);
 
         // Usamos un tamaño fijo de 256px para la vista previa
-        const dataURL = await generateQRCode({
+        let dataURL = await generateQRCode({
           content,
           color: config.color,
           backgroundColor: config.backgroundColor,
@@ -68,6 +69,18 @@ export default function QRPreview({ config }: QRPreviewProps) {
           gradientColorEnd: config.gradientColorEnd,
           gradientRotation: config.gradientRotation,
         });
+
+        // Si hay frame, aplicarlo
+        if (config.frameId) {
+          dataURL = await renderWithFramePNG({
+            frameId: config.frameId,
+            qrDataUrl: dataURL,
+            qrSize: 256,
+            frameColor: config.frameColor,
+            frameText: config.frameText,
+            backgroundColor: config.backgroundColor,
+          });
+        }
 
         console.log('QR generated successfully, dataURL length:', dataURL?.length);
         if (isMountedRef.current) {
@@ -142,6 +155,10 @@ export default function QRPreview({ config }: QRPreviewProps) {
               gradientStart: config.gradientColorStart,
               gradientEnd: config.gradientColorEnd,
               gradientRotation: config.gradientRotation,
+              // Frame
+              frameId: config.frameId,
+              frameColor: config.frameColor,
+              frameText: config.frameText,
             }),
           });
 
@@ -163,24 +180,64 @@ export default function QRPreview({ config }: QRPreviewProps) {
       }
 
       // Descargar el QR code (con contenido dinámico si está logueado)
-      await downloadQRCodeWithDescription({
-        content: qrContent, // Usar shortURL si está logueado, o contenido directo si no
-        color: config.color,
-        backgroundColor: config.backgroundColor,
-        size: config.size,
-        description: config.description,
-        logo: config.logo,
-        // Estilos avanzados
-        dotStyle: config.dotStyle,
-        cornerStyle: config.cornerStyle,
-        cornerDotStyle: config.cornerDotStyle,
-        cornerColor: config.cornerColor,
-        gradientEnabled: config.gradientEnabled,
-        gradientType: config.gradientType,
-        gradientColorStart: config.gradientColorStart,
-        gradientColorEnd: config.gradientColorEnd,
-        gradientRotation: config.gradientRotation,
-      }, config.format);
+      // Si hay frame, usamos un flujo especial
+      if (config.frameId) {
+        // Generar QR base al tamaño solicitado
+        let qrDataUrl = await generateQRCode({
+          content: qrContent,
+          color: config.color,
+          backgroundColor: config.backgroundColor,
+          size: config.size,
+          logo: config.logo,
+          dotStyle: config.dotStyle,
+          cornerStyle: config.cornerStyle,
+          cornerDotStyle: config.cornerDotStyle,
+          cornerColor: config.cornerColor,
+          gradientEnabled: config.gradientEnabled,
+          gradientType: config.gradientType,
+          gradientColorStart: config.gradientColorStart,
+          gradientColorEnd: config.gradientColorEnd,
+          gradientRotation: config.gradientRotation,
+        });
+
+        // Aplicar frame
+        qrDataUrl = await renderWithFramePNG({
+          frameId: config.frameId,
+          qrDataUrl: qrDataUrl,
+          qrSize: config.size,
+          frameColor: config.frameColor,
+          frameText: config.frameText,
+          backgroundColor: config.backgroundColor,
+        });
+
+        // Descargar directamente
+        const link = document.createElement('a');
+        link.download = `qr-code-${Date.now()}.png`;
+        link.href = qrDataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Sin frame, usar la función original
+        await downloadQRCodeWithDescription({
+          content: qrContent, // Usar shortURL si está logueado, o contenido directo si no
+          color: config.color,
+          backgroundColor: config.backgroundColor,
+          size: config.size,
+          description: config.description,
+          logo: config.logo,
+          // Estilos avanzados
+          dotStyle: config.dotStyle,
+          cornerStyle: config.cornerStyle,
+          cornerDotStyle: config.cornerDotStyle,
+          cornerColor: config.cornerColor,
+          gradientEnabled: config.gradientEnabled,
+          gradientType: config.gradientType,
+          gradientColorStart: config.gradientColorStart,
+          gradientColorEnd: config.gradientColorEnd,
+          gradientRotation: config.gradientRotation,
+        }, config.format);
+      }
 
       // Mostrar mensaje de éxito
       if (session?.user) {
@@ -218,7 +275,7 @@ export default function QRPreview({ config }: QRPreviewProps) {
     try {
       // Generar QR con el tamaño completo para el PDF
       const content = generateQRContent(config);
-      const fullSizeQR = await generateQRCode({
+      let fullSizeQR = await generateQRCode({
         content,
         color: config.color,
         backgroundColor: config.backgroundColor,
@@ -234,6 +291,18 @@ export default function QRPreview({ config }: QRPreviewProps) {
         gradientColorEnd: config.gradientColorEnd,
         gradientRotation: config.gradientRotation,
       });
+
+      // Si hay frame, aplicarlo
+      if (config.frameId) {
+        fullSizeQR = await renderWithFramePNG({
+          frameId: config.frameId,
+          qrDataUrl: fullSizeQR,
+          qrSize: config.size,
+          frameColor: config.frameColor,
+          frameText: config.frameText,
+          backgroundColor: config.backgroundColor,
+        });
+      }
 
       // Descargar PDF
       const filename = config.description

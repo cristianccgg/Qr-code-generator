@@ -26,6 +26,7 @@ model User {
   sessions      Session[]
   qrCodes       QRCode[]
   campaigns     Campaign[]
+  templates     QRTemplate[]
 
   @@map("users")
 }
@@ -110,6 +111,11 @@ model QRCode {
   gradientEnd      String?
   gradientRotation Int?      @default(0)
 
+  // Frame options
+  frameId          String?
+  frameColor       String?
+  frameText        String?
+
   // Dynamic QR features
   isDynamic       Boolean   @default(true)
   destinationUrl  String?   @db.Text // For dynamic QRs, the current destination
@@ -173,4 +179,46 @@ model Scan {
   @@map("scans")
   @@index([qrCodeId])
   @@index([scannedAt])
+}
+
+// QR Template model - reusable style configurations
+model QRTemplate {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  thumbnail       String?  @db.Text
+
+  // Template metadata
+  isSystem        Boolean  @default(false)
+  category        String   @default("general")
+
+  // QR Style options (same as QRCode)
+  color           String   @default("#000000")
+  backgroundColor String   @default("#FFFFFF")
+  dotStyle        String   @default("square")
+  cornerStyle     String   @default("square")
+  cornerDotStyle  String   @default("square")
+  cornerColor     String?
+  gradientEnabled Boolean  @default(false)
+  gradientType    String?
+  gradientStart   String?
+  gradientEnd     String?
+  gradientRotation Int?    @default(0)
+
+  // Frame options
+  frameId         String?
+  frameColor      String?
+  frameText       String?
+
+  // Owner (null for system templates)
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("qr_templates")
+  @@index([isSystem])
+  @@index([userId])
+  @@index([category])
 }

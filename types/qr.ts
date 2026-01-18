@@ -46,6 +46,10 @@ export interface QRConfig {
   gradientColorStart?: string;
   gradientColorEnd?: string;
   gradientRotation?: number; // 0-360 grados
+  // Frame decorativo
+  frameId?: string;
+  frameColor?: string;
+  frameText?: string;
 }
 
 export interface QRColorOption {
