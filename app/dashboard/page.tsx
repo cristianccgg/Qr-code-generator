@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { FiGrid, FiBarChart2, FiTrendingUp, FiEye } from 'react-icons/fi'
 import Link from 'next/link'
 import { startOfDay, subDays } from 'date-fns'
+import UsageLimitsCard from '@/components/dashboard/UsageLimitsCard'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -73,33 +74,39 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          icon={FiGrid}
-          label="Total QR Codes"
-          value={totalQRCodes}
-          color="from-[#f5576c] to-[#f093fb]"
-        />
-        <StatCard
-          icon={FiBarChart2}
-          label="Total Scans"
-          value={totalScans}
-          color="from-[#4facfe] to-[#00f2fe]"
-        />
-        <StatCard
-          icon={FiTrendingUp}
-          label="Last 7 Days"
-          value={recentScans}
-          growth={scanGrowth}
-          color="from-[#43e97b] to-[#38f9d7]"
-        />
-        <StatCard
-          icon={FiEye}
-          label="Campaigns"
-          value={totalCampaigns}
-          color="from-[#fa709a] to-[#fee140]"
-        />
+      {/* Plan Usage & Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Usage Card - Takes 1 column */}
+        <UsageLimitsCard />
+
+        {/* Stats Grid - Takes 2 columns */}
+        <div className="lg:col-span-2 grid grid-cols-2 gap-6">
+          <StatCard
+            icon={FiGrid}
+            label="Total QR Codes"
+            value={totalQRCodes}
+            color="from-[#f5576c] to-[#f093fb]"
+          />
+          <StatCard
+            icon={FiBarChart2}
+            label="Total Scans"
+            value={totalScans}
+            color="from-[#4facfe] to-[#00f2fe]"
+          />
+          <StatCard
+            icon={FiTrendingUp}
+            label="Last 7 Days"
+            value={recentScans}
+            growth={scanGrowth}
+            color="from-[#43e97b] to-[#38f9d7]"
+          />
+          <StatCard
+            icon={FiEye}
+            label="Campaigns"
+            value={totalCampaigns}
+            color="from-[#fa709a] to-[#fee140]"
+          />
+        </div>
       </div>
 
       {/* Recent QR Codes */}

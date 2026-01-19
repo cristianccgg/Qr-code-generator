@@ -2,12 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { userHasFeature } from '@/lib/subscription'
 import { startOfDay, subDays, format, eachDayOfInterval } from 'date-fns'
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Verificar si el usuario tiene acceso a analytics
+  const hasBasicAnalytics = await userHasFeature(session.user.id, 'analytics_basic')
+  if (!hasBasicAnalytics) {
+    return NextResponse.json(
+      {
+        error: 'Analytics is not available on the Free plan. Upgrade to Starter or Pro.',
+        code: 'FEATURE_NOT_AVAILABLE'
+      },
+      { status: 403 }
+    )
   }
 
   const { searchParams } = new URL(request.url)

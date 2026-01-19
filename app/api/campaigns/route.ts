@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { userHasFeature } from '@/lib/subscription'
 
 // GET all campaigns for the authenticated user
 export async function GET(request: NextRequest) {
@@ -9,6 +10,18 @@ export async function GET(request: NextRequest) {
 
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Verificar si el usuario tiene acceso a campañas
+  const hasCampaigns = await userHasFeature(session.user.id, 'campaigns')
+  if (!hasCampaigns) {
+    return NextResponse.json(
+      {
+        error: 'Campaigns are only available on the Pro plan. Upgrade to access this feature.',
+        code: 'FEATURE_NOT_AVAILABLE'
+      },
+      { status: 403 }
+    )
   }
 
   const campaigns = await prisma.campaign.findMany({
@@ -34,6 +47,18 @@ export async function POST(request: NextRequest) {
 
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Verificar si el usuario tiene acceso a campañas
+  const hasCampaigns = await userHasFeature(session.user.id, 'campaigns')
+  if (!hasCampaigns) {
+    return NextResponse.json(
+      {
+        error: 'Campaigns are only available on the Pro plan. Upgrade to access this feature.',
+        code: 'FEATURE_NOT_AVAILABLE'
+      },
+      { status: 403 }
+    )
   }
 
   try {

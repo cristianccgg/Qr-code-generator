@@ -203,9 +203,9 @@ model UsageRecord {
 - [x] Modelo `Subscription` en Prisma (plan, status, fechas)
 - [x] Contadores por usuario (QRs dinámicos creados, scans del mes)
 - [x] Funciones para verificar límites antes de crear/escanear
-- [ ] UI para mostrar uso actual vs límites del plan
-- [ ] Bloquear features según plan en APIs (analytics, bulk, etc.)
-- [ ] Integrar verificación de límites en endpoints existentes
+- [x] UI para mostrar uso actual vs límites del plan (`UsageLimitsCard`)
+- [x] Bloquear features según plan en APIs (analytics, bulk, campaigns)
+- [x] Integrar verificación de límites en endpoints existentes
 
 ### Prioridad 1: Integración de Pagos (Lemon Squeezy)
 Merchant of Record para recibir pagos globales sin crear empresa en USA.

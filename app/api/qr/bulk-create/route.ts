@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { nanoid } from 'nanoid';
+import { userHasFeature } from '@/lib/subscription';
 import { BulkCreateRequest, BulkCreateResponse, BulkQRCreated, BulkQRFailed, BULK_LIMITS } from '@/types/bulk';
 import { QRType, QRFormat } from '@prisma/client';
 
@@ -13,6 +14,18 @@ export async function POST(req: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Verificar si el usuario tiene acceso a bulk creation
+    const hasBulkCreation = await userHasFeature(session.user.id, 'bulk_creation');
+    if (!hasBulkCreation) {
+      return NextResponse.json(
+        {
+          error: 'Bulk creation is only available on the Pro plan. Upgrade to access this feature.',
+          code: 'FEATURE_NOT_AVAILABLE'
+        },
+        { status: 403 }
+      );
     }
 
     const body: BulkCreateRequest = await req.json();
