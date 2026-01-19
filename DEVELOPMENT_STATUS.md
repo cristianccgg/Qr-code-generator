@@ -75,12 +75,23 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 - [x] Export modal con opciones (Labels PDF, Multi-page PDF, ZIP)
 - [x] Batch export desde dashboard (selección múltiple)
 
-### 9. Página de Precios ✨ **NUEVO**
+### 9. Página de Precios
 - [x] Página `/pricing` con diseño consistente
-- [x] 3 planes definidos: Free, Starter ($4/mes), Pro ($9/mes)
+- [x] 3 planes definidos: Free, Starter ($5/mes), Pro ($12/mes)
 - [x] Tabla comparativa de features
 - [x] Sección de FAQ
 - [x] Link en Navbar (desktop y móvil)
+
+### 10. Sistema de Planes y Límites ✨ **NUEVO**
+- [x] Modelo `Subscription` en Prisma (plan, status, fechas, campos Lemon Squeezy)
+- [x] Modelo `UsageRecord` para contadores mensuales
+- [x] Configuración de planes en `lib/plans.ts` (Free, Starter, Pro)
+- [x] Funciones de verificación de límites en `lib/subscription.ts`
+- [x] `checkCanCreateDynamicQR()` - verificar antes de crear QR dinámico
+- [x] `checkCanTrackScan()` - verificar límites de scans
+- [x] `userHasFeature()` - verificar features por plan
+- [x] `getSubscriptionStatus()` - status completo con uso actual
+- [x] Contadores: `incrementDynamicQRCount()`, `incrementScanCount()`
 
 ---
 
@@ -125,6 +136,8 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 │   ├── pdf-generator.ts            # Generación de PDFs (single, labels, multi-page)
 │   ├── csv-parser.ts               # Parser y validador de CSV
 │   ├── csv-template.ts             # Generador de plantilla CSV
+│   ├── plans.ts                    # Configuración de planes (límites, features, precios)
+│   ├── subscription.ts             # Lógica de suscripciones y verificación de límites
 │   ├── auth.ts                     # Configuración NextAuth
 │   └── prisma.ts                   # Cliente Prisma singleton
 │
@@ -139,7 +152,7 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 
 ---
 
-## Schema de Base de Datos (Campos de Estilo)
+## Schema de Base de Datos
 
 ```prisma
 model QRCode {
@@ -156,21 +169,45 @@ model QRCode {
   gradientEnd      String?
   gradientRotation Int?      @default(0)
 }
+
+model Subscription {
+  id                    String             @id
+  userId                String             @unique
+  planId                String             @default("free") // 'free', 'starter', 'pro'
+  status                SubscriptionStatus @default(ACTIVE)
+  billingCycle          BillingCycle?      // MONTHLY o YEARLY
+
+  // Campos Lemon Squeezy (preparados para integración)
+  lemonSqueezyId        String?            @unique
+  lemonSqueezyCustomerId String?
+  // ... más campos para billing
+}
+
+model UsageRecord {
+  id              String   @id
+  userId          String
+  period          String   // "YYYY-MM" para tracking mensual
+  dynamicQRsCreated Int    @default(0)
+  scansTracked      Int    @default(0)
+
+  @@unique([userId, period])
+}
 ```
 
 ---
 
 ## Próximos Pasos (Roadmap)
 
-### Prioridad 1: Sistema de Planes y Límites
-Implementar la lógica de planes para monetización.
-- [ ] Modelo `Subscription` en Prisma (plan, status, fechas)
-- [ ] Contadores por usuario (QRs dinámicos creados, scans del mes)
-- [ ] Middleware para verificar límites antes de crear/escanear
+### ~~Prioridad 1: Sistema de Planes y Límites~~ ✅ COMPLETADO
+~~Implementar la lógica de planes para monetización.~~
+- [x] Modelo `Subscription` en Prisma (plan, status, fechas)
+- [x] Contadores por usuario (QRs dinámicos creados, scans del mes)
+- [x] Funciones para verificar límites antes de crear/escanear
 - [ ] UI para mostrar uso actual vs límites del plan
-- [ ] Bloquear features según plan (analytics, bulk, etc.)
+- [ ] Bloquear features según plan en APIs (analytics, bulk, etc.)
+- [ ] Integrar verificación de límites en endpoints existentes
 
-### Prioridad 2: Integración de Pagos (Lemon Squeezy)
+### Prioridad 1: Integración de Pagos (Lemon Squeezy)
 Merchant of Record para recibir pagos globales sin crear empresa en USA.
 - [ ] Crear cuenta en Lemon Squeezy
 - [ ] Configurar productos (Starter mensual/anual, Pro mensual/anual)
@@ -185,7 +222,7 @@ Merchant of Record para recibir pagos globales sin crear empresa en USA.
 - Fee: 5% + $0.50 por transacción
 - API moderna, fácil integración con Next.js
 
-### Prioridad 3: Templates Prediseñados
+### Prioridad 2: Templates Prediseñados
 - [ ] Galería de templates por industria
 - [ ] Templates con frames/bordes decorativos
 - [ ] Guardar estilos como "mis templates"
@@ -271,19 +308,19 @@ GOOGLE_CLIENT_SECRET=    # Para OAuth (opcional)
 
 ## Modelo de Negocio Definido
 
-### Planes
+### Planes (según `lib/plans.ts`)
 
-| Plan | Precio | QRs Dinámicos | Scans/mes | Features |
-|------|--------|---------------|-----------|----------|
-| **Free** | $0 | 3 | 500 | PNG 500px, estilos, logo |
-| **Starter** | $4/mes ($29/año) | 25 | 5,000 | + Analytics, SVG, PDF, Campañas |
-| **Pro** | $9/mes ($79/año) | 100 | Ilimitados | + Bulk creation, alta resolución |
+| Plan | Precio | QRs Dinámicos | Scans/mes | Resolución | Features |
+|------|--------|---------------|-----------|------------|----------|
+| **Free** | $0 | 0 | 0 | 500px | Estilos básicos |
+| **Starter** | $5/mes ($49/año) | 15 | 5,000 | 1024px | + Logo, SVG, Analytics básico |
+| **Pro** | $12/mes ($119/año) | Ilimitados | Ilimitados | 2048px | + PDF, Analytics avanzado, Campañas, Bulk |
 
 ### Diferenciadores vs Competencia
-- **Precio más bajo**: $4/mes vs $5-7/mes de competidores
-- **Bulk creation accesible**: desde $9/mes vs $16+ en otros
-- **Free generoso**: 3 QRs dinámicos vs 1-3 en competidores
+- **Precio competitivo**: $5/mes vs $5-7/mes de competidores
+- **Bulk creation accesible**: desde $12/mes vs $16+ en otros
 - **Sin marca de agua** en ningún plan
+- **Estilos avanzados** en todos los planes
 
 ### Público Objetivo
 - Artistas y galerías
@@ -296,10 +333,10 @@ GOOGLE_CLIENT_SECRET=    # Para OAuth (opcional)
 
 ## Notas para Próxima Sesión
 
-1. **Sistema de planes** es la siguiente prioridad - necesario antes de pagos
-2. Los estilos ya se guardan en DB, listos para edición futura
-3. El generador (`lib/qr-generator.ts`) ya está preparado para recibir todas las opciones
-4. La UI del formulario usa tabs, fácil de extender con más opciones
-5. El sistema de exportación soporta múltiples formatos y layouts
-6. **Lemon Squeezy** es la opción elegida para pagos (no requiere empresa en USA)
-7. La página de precios ya está lista en `/pricing`
+1. **Sistema de planes completado** - modelos y funciones listas en `lib/plans.ts` y `lib/subscription.ts`
+2. **Falta integrar** las funciones de límites en los endpoints existentes (crear QR, tracking de scans)
+3. **Falta UI** para mostrar uso actual vs límites del plan en el dashboard
+4. **Lemon Squeezy** es el siguiente paso - campos ya preparados en modelo `Subscription`
+5. Los estilos ya se guardan en DB, listos para edición futura
+6. El generador (`lib/qr-generator.ts`) ya está preparado para recibir todas las opciones
+7. La página de precios ya está lista en `/pricing` (actualizar precios si es necesario)
