@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import { FiCheck, FiX, FiZap, FiStar, FiAward } from 'react-icons/fi';
 import Link from 'next/link';
@@ -7,17 +8,18 @@ import Link from 'next/link';
 const plans = [
   {
     name: 'Free',
-    price: '$0',
-    period: 'forever',
-    description: 'Perfect for trying out and personal projects',
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    yearlySavings: null,
+    description: 'Create unlimited static QR codes',
     icon: FiZap,
     color: 'from-gray-500 to-gray-600',
     features: [
       { name: 'Static QR codes', value: 'Unlimited', included: true },
-      { name: 'Dynamic QR codes', value: '3', included: true },
-      { name: 'Scans per month', value: '500', included: true },
+      { name: 'Dynamic QR codes', value: false, included: false },
       { name: 'PNG download (500px)', value: true, included: true },
-      { name: 'Custom colors & logo', value: true, included: true },
+      { name: 'Custom colors & styles', value: true, included: true },
+      { name: 'Logo in QR', value: false, included: false },
       { name: 'Analytics', value: false, included: false },
       { name: 'SVG download', value: false, included: false },
       { name: 'PDF export', value: false, included: false },
@@ -28,79 +30,83 @@ const plans = [
     ctaLink: '/auth/signup',
     popular: false,
     badge: undefined,
+    hasBilling: false,
   },
   {
     name: 'Starter',
-    price: '$4',
-    period: '/month',
-    yearlyPrice: '$29/year',
-    yearlySavings: 'Save $19',
+    monthlyPrice: 5,
+    yearlyPrice: 49,
+    yearlySavings: 18,
     description: 'For creators and small businesses',
     icon: FiStar,
     color: 'from-[#40B49D] to-[#2d8b7a]',
     features: [
       { name: 'Static QR codes', value: 'Unlimited', included: true },
-      { name: 'Dynamic QR codes', value: '25', included: true },
+      { name: 'Dynamic QR codes', value: '15', included: true },
       { name: 'Scans per month', value: '5,000', included: true },
       { name: 'PNG download (1024px)', value: true, included: true },
-      { name: 'Custom colors & logo', value: true, included: true },
-      { name: 'Analytics', value: true, included: true },
+      { name: 'Logo in QR', value: true, included: true },
+      { name: 'Analytics (scan count)', value: true, included: true },
       { name: 'SVG download', value: true, included: true },
-      { name: 'PDF export', value: true, included: true },
-      { name: 'Campaigns', value: true, included: true },
+      { name: 'PDF export', value: false, included: false },
+      { name: 'Campaigns', value: false, included: false },
       { name: 'Bulk creation', value: false, included: false },
     ],
     cta: 'Start Starter Plan',
     ctaLink: '/auth/signup?plan=starter',
     popular: true,
     badge: undefined,
+    hasBilling: true,
   },
   {
     name: 'Pro',
-    price: '$9',
-    period: '/month',
-    yearlyPrice: '$79/year',
-    yearlySavings: 'Save $29',
+    monthlyPrice: 12,
+    yearlyPrice: 119,
+    yearlySavings: 17,
     description: 'For professionals and growing teams',
     icon: FiAward,
     color: 'from-[#f5576c] to-[#8538a6]',
     features: [
       { name: 'Static QR codes', value: 'Unlimited', included: true },
-      { name: 'Dynamic QR codes', value: '100', included: true },
+      { name: 'Dynamic QR codes', value: 'Unlimited', included: true },
       { name: 'Scans per month', value: 'Unlimited', included: true },
       { name: 'PNG download (2048px)', value: true, included: true },
-      { name: 'Custom colors & logo', value: true, included: true },
-      { name: 'Analytics', value: true, included: true },
+      { name: 'Logo in QR', value: true, included: true },
+      { name: 'Advanced analytics', value: true, included: true },
       { name: 'SVG download', value: true, included: true },
-      { name: 'PDF export', value: true, included: true },
+      { name: 'PDF export & labels', value: true, included: true },
       { name: 'Campaigns', value: true, included: true },
       { name: 'Bulk creation', value: true, included: true },
     ],
     cta: 'Start Pro Plan',
     ctaLink: '/auth/signup?plan=pro',
     popular: false,
-    badge: undefined,
+    badge: 'Best Value',
+    hasBilling: true,
   },
 ];
 
 const comparisonFeatures = [
   { name: 'Static QR codes', free: 'Unlimited', starter: 'Unlimited', pro: 'Unlimited' },
-  { name: 'Dynamic QR codes', free: '3', starter: '25', pro: '100' },
-  { name: 'Scans per month', free: '500', starter: '5,000', pro: 'Unlimited' },
-  { name: 'Analytics', free: false, starter: true, pro: true },
+  { name: 'Dynamic QR codes', free: '-', starter: '15', pro: 'Unlimited' },
+  { name: 'Scans per month', free: '-', starter: '5,000', pro: 'Unlimited' },
   { name: 'PNG resolution', free: '500px', starter: '1024px', pro: '2048px' },
-  { name: 'SVG download', free: false, starter: true, pro: true },
-  { name: 'PDF export', free: false, starter: true, pro: true },
-  { name: 'Bulk creation (CSV)', free: false, starter: false, pro: true },
-  { name: 'Label sheets PDF', free: false, starter: false, pro: true },
   { name: 'All QR styles', free: true, starter: true, pro: true },
-  { name: 'Logo in QR', free: true, starter: true, pro: true },
   { name: 'Gradients', free: true, starter: true, pro: true },
-  { name: 'Campaigns', free: false, starter: true, pro: true },
+  { name: 'Logo in QR', free: false, starter: true, pro: true },
+  { name: 'SVG download', free: false, starter: true, pro: true },
+  { name: 'Analytics (scan count)', free: false, starter: true, pro: true },
+  { name: 'Advanced analytics', free: false, starter: false, pro: true },
+  { name: 'PDF export', free: false, starter: false, pro: true },
+  { name: 'Label sheets PDF', free: false, starter: false, pro: true },
+  { name: 'Campaigns', free: false, starter: false, pro: true },
+  { name: 'Bulk creation (CSV)', free: false, starter: false, pro: true },
   { name: 'Priority support', free: false, starter: true, pro: true },
 ];
 
 export default function PricingPage() {
+  const [isYearly, setIsYearly] = useState(true);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f5576c] via-[#8538a6] to-[#7386bf] relative overflow-hidden">
       {/* Animated background blobs */}
@@ -114,7 +120,7 @@ export default function PricingPage() {
 
         <main className="container mx-auto px-4 py-12">
           {/* Hero Section */}
-          <div className="text-center mb-16 animate-fadeIn">
+          <div className="text-center mb-10 animate-fadeIn">
             <h1 className="text-white text-4xl md:text-5xl font-black mb-4 drop-shadow-2xl">
               Simple, Transparent Pricing
             </h1>
@@ -123,14 +129,44 @@ export default function PricingPage() {
             </p>
           </div>
 
+          {/* Billing Toggle */}
+          <div className="flex flex-col items-center gap-2 mb-12">
+            <div className="flex items-center gap-3">
+              <span className={`text-sm font-medium transition-colors ${!isYearly ? 'text-white' : 'text-white/50'}`}>
+                Monthly
+              </span>
+              <button
+                onClick={() => setIsYearly(!isYearly)}
+                className={`relative w-14 h-7 rounded-full transition-colors ${
+                  isYearly ? 'bg-[#40B49D]' : 'bg-white/30'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${
+                    isYearly ? 'translate-x-7' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium transition-colors ${isYearly ? 'text-white' : 'text-white/50'}`}>
+                Yearly
+              </span>
+            </div>
+            <span className={`text-sm font-bold text-[#40B49D] h-5 transition-opacity duration-300 ${isYearly ? 'opacity-100' : 'opacity-0'}`}>
+              Save up to 17%
+            </span>
+            <span className="text-white/50 text-xs mt-1">
+              Prices in USD. Taxes may apply at checkout.
+            </span>
+          </div>
+
           {/* Pricing Cards */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-20">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative bg-white/10 backdrop-blur-lg rounded-3xl border ${
-                  plan.popular ? 'border-white/50 scale-105' : 'border-white/20'
-                } shadow-2xl overflow-hidden transition-all hover:scale-105 hover:border-white/40`}
+                className={`relative bg-gray-900/90 backdrop-blur-lg rounded-3xl border ${
+                  plan.popular ? 'border-[#40B49D] scale-105 ring-2 ring-[#40B49D]/30' : 'border-gray-700'
+                } shadow-2xl overflow-hidden transition-all hover:scale-105 hover:border-gray-500`}
               >
                 {/* Popular badge */}
                 {plan.popular && (
@@ -157,24 +193,46 @@ export default function PricingPage() {
 
                   {/* Price */}
                   <div className="mb-2">
-                    <span className="text-white text-4xl font-black">{plan.price}</span>
-                    <span className="text-white/70 text-lg ml-1">{plan.period}</span>
+                    {plan.hasBilling ? (
+                      <>
+                        <span className="text-white text-4xl font-black">
+                          ${isYearly ? Math.round(plan.yearlyPrice / 12) : plan.monthlyPrice}
+                        </span>
+                        <span className="text-white/70 text-lg ml-1">/month</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-white text-4xl font-black">$0</span>
+                        <span className="text-white/70 text-lg ml-1">forever</span>
+                      </>
+                    )}
                   </div>
 
-                  {/* Yearly option */}
-                  {plan.yearlyPrice && (
-                    <div className="mb-4">
-                      <span className="text-white/60 text-sm">{plan.yearlyPrice}</span>
-                      <span className="ml-2 text-[#40B49D] text-sm font-semibold">{plan.yearlySavings}</span>
+                  {/* Yearly billing info */}
+                  {plan.hasBilling && (
+                    <div className="mb-4 h-6">
+                      {isYearly ? (
+                        <>
+                          <span className="text-white/60 text-sm">${plan.yearlyPrice} billed yearly</span>
+                          <span className="ml-2 text-[#40B49D] text-sm font-semibold">
+                            Save {plan.yearlySavings}%
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-white/60 text-sm">${plan.monthlyPrice * 12}/year if monthly</span>
+                      )}
                     </div>
                   )}
+
+                  {/* Spacer for Free plan */}
+                  {!plan.hasBilling && <div className="mb-4 h-6" />}
 
                   {/* Description */}
                   <p className="text-white/70 text-sm mb-6">{plan.description}</p>
 
                   {/* CTA Button */}
                   <Link
-                    href={plan.ctaLink}
+                    href={`${plan.ctaLink}${plan.hasBilling ? `&billing=${isYearly ? 'yearly' : 'monthly'}` : ''}`}
                     className={`block w-full py-3 px-4 rounded-xl text-center font-bold transition-all ${
                       plan.popular
                         ? 'bg-gradient-to-r from-[#40B49D] to-[#2d8b7a] text-white hover:shadow-lg hover:shadow-[#40B49D]/30'
@@ -193,12 +251,12 @@ export default function PricingPage() {
                         {feature.included ? (
                           <FiCheck className="w-5 h-5 text-[#40B49D] flex-shrink-0" />
                         ) : (
-                          <FiX className="w-5 h-5 text-white/30 flex-shrink-0" />
+                          <FiX className="w-5 h-5 text-gray-600 flex-shrink-0" />
                         )}
-                        <span className={`text-sm ${feature.included ? 'text-white' : 'text-white/40'}`}>
+                        <span className={`text-sm ${feature.included ? 'text-gray-100' : 'text-gray-500'}`}>
                           {feature.name}
                           {typeof feature.value === 'string' && feature.included && (
-                            <span className="text-white/60 ml-1">({feature.value})</span>
+                            <span className="text-gray-400 ml-1">({feature.value})</span>
                           )}
                         </span>
                       </li>
@@ -210,48 +268,48 @@ export default function PricingPage() {
           </div>
 
           {/* Comparison Table */}
-          <div className="max-w-6xl mx-auto mb-20">
+          <div className="max-w-4xl mx-auto mb-20">
             <h2 className="text-white text-3xl font-bold text-center mb-8">
               Compare All Features
             </h2>
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+            <div className="bg-gray-900/95 backdrop-blur-lg rounded-3xl border border-gray-700 shadow-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-white/20">
-                      <th className="text-left text-white font-bold p-4">Feature</th>
-                      <th className="text-center text-white font-bold p-4">Free</th>
-                      <th className="text-center text-white font-bold p-4 bg-white/10">Starter</th>
-                      <th className="text-center text-white font-bold p-4">Pro</th>
+                    <tr className="border-b border-gray-700 bg-gray-800/50">
+                      <th className="text-left text-gray-100 font-bold p-4">Feature</th>
+                      <th className="text-center text-gray-100 font-bold p-4 w-24">Free</th>
+                      <th className="text-center text-gray-100 font-bold p-4 w-24 bg-[#40B49D]/10 border-x border-[#40B49D]/30">Starter</th>
+                      <th className="text-center text-gray-100 font-bold p-4 w-24">Pro</th>
                     </tr>
                   </thead>
                   <tbody>
                     {comparisonFeatures.map((feature, index) => (
                       <tr
                         key={feature.name}
-                        className={index % 2 === 0 ? 'bg-white/5' : ''}
+                        className={`border-b border-gray-800 ${index % 2 === 0 ? 'bg-gray-800/30' : ''}`}
                       >
-                        <td className="text-white/90 p-4 font-medium">{feature.name}</td>
+                        <td className="text-gray-200 p-4 font-medium">{feature.name}</td>
                         <td className="text-center p-4">
                           {typeof feature.free === 'boolean' ? (
                             feature.free ? (
                               <FiCheck className="w-5 h-5 text-[#40B49D] mx-auto" />
                             ) : (
-                              <FiX className="w-5 h-5 text-white/30 mx-auto" />
+                              <FiX className="w-5 h-5 text-gray-600 mx-auto" />
                             )
                           ) : (
-                            <span className="text-white/80">{feature.free}</span>
+                            <span className="text-gray-300 text-sm">{feature.free}</span>
                           )}
                         </td>
-                        <td className="text-center p-4 bg-white/10">
+                        <td className="text-center p-4 bg-[#40B49D]/5 border-x border-[#40B49D]/20">
                           {typeof feature.starter === 'boolean' ? (
                             feature.starter ? (
                               <FiCheck className="w-5 h-5 text-[#40B49D] mx-auto" />
                             ) : (
-                              <FiX className="w-5 h-5 text-white/30 mx-auto" />
+                              <FiX className="w-5 h-5 text-gray-600 mx-auto" />
                             )
                           ) : (
-                            <span className="text-white font-semibold">{feature.starter}</span>
+                            <span className="text-white font-semibold text-sm">{feature.starter}</span>
                           )}
                         </td>
                         <td className="text-center p-4">
@@ -259,10 +317,10 @@ export default function PricingPage() {
                             feature.pro ? (
                               <FiCheck className="w-5 h-5 text-[#40B49D] mx-auto" />
                             ) : (
-                              <FiX className="w-5 h-5 text-white/30 mx-auto" />
+                              <FiX className="w-5 h-5 text-gray-600 mx-auto" />
                             )
                           ) : (
-                            <span className="text-white/80">{feature.pro}</span>
+                            <span className="text-gray-300 text-sm">{feature.pro}</span>
                           )}
                         </td>
                       </tr>
@@ -293,8 +351,8 @@ export default function PricingPage() {
                   a: "Yes! You can change your plan at any time. When upgrading, you'll get immediate access to new features. When downgrading, the change takes effect at your next billing cycle.",
                 },
                 {
-                  q: 'Why is analytics only available on paid plans?',
-                  a: "Analytics requires server resources to track and store scan data. Paid plans help us maintain this infrastructure while keeping the basic QR generator free for everyone.",
+                  q: 'What analytics are included in each plan?',
+                  a: 'Starter includes total scan counts for each QR code. Pro adds detailed breakdowns by location (country, city), device type (mobile, tablet, desktop), browser, and operating system.',
                 },
                 {
                   q: 'Do you offer refunds?',
@@ -315,7 +373,7 @@ export default function PricingPage() {
 
         {/* Footer */}
         <footer className="text-center py-8 text-white/60 text-sm">
-          <p>Made with ❤️ for everyone who needs a simple QR code</p>
+          <p>Made with care for everyone who needs a simple QR code</p>
         </footer>
       </div>
     </div>
