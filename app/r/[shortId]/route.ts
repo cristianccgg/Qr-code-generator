@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { UAParser } from "ua-parser-js";
+import { checkCanTrackScan, incrementScanCount } from "@/lib/subscription";
 
 // Helper to get geo data from IP (using free ip-api.com service)
 async function getGeoData(ip: string): Promise<{
@@ -126,6 +127,14 @@ export async function GET(request: Request, context: any) {
     // Geo lookup runs in parallel with the redirect
     (async () => {
       try {
+        // Check if user can track scans (based on their plan)
+        const canTrack = await checkCanTrackScan(qrCode.userId);
+
+        if (!canTrack.allowed) {
+          console.log(`[Redirect] Scan not tracked for QR: ${qrCode.id} - ${canTrack.reason}`);
+          return; // Skip tracking but still redirect
+        }
+
         // Get geo data (with timeout)
         const geoData = ipAddress ? await getGeoData(ipAddress) : {
           country: null, city: null, region: null, latitude: null, longitude: null
@@ -148,6 +157,10 @@ export async function GET(request: Request, context: any) {
             longitude: geoData.longitude,
           },
         });
+
+        // Increment scan counter for the user
+        await incrementScanCount(qrCode.userId);
+
         console.log(`[Redirect] Scan recorded for QR: ${qrCode.id} - ${deviceType}/${browser}/${os} from ${geoData.city}, ${geoData.country}`);
       } catch (scanError) {
         console.error("[Redirect] Failed to record scan:", scanError);

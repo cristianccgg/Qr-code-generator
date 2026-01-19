@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FiX, FiDownload, FiGrid, FiFile, FiArchive } from 'react-icons/fi';
+import { FiX, FiDownload, FiGrid, FiFile, FiArchive, FiLock } from 'react-icons/fi';
 import {
   LabelLayout,
   LABEL_LAYOUTS,
@@ -12,6 +12,8 @@ import {
 import { downloadLabelsPDF, downloadMultiPagePDF, downloadBlob } from '@/lib/pdf-generator';
 import { generateQRCode } from '@/lib/qr-generator';
 import JSZip from 'jszip';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useUpgradeModal } from '@/components/billing/UpgradeModal';
 
 interface ExportableQR {
   id: string;
@@ -46,8 +48,12 @@ export default function ExportModal({ isOpen, onClose, qrCodes }: ExportModalPro
   const [includeDescription, setIncludeDescription] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const { canExportPDF } = useSubscription();
+  const { showUpgradeModal } = useUpgradeModal();
 
   if (!isOpen) return null;
+
+  const canUsePDFExport = canExportPDF();
 
   const generateQRDataUrls = async (): Promise<{ dataUrl: string; description?: string }[]> => {
     const results: { dataUrl: string; description?: string }[] = [];
@@ -149,27 +155,49 @@ export default function ExportModal({ isOpen, onClose, qrCodes }: ExportModalPro
             <label className="block text-sm font-medium text-gray-700 mb-3">Export Format</label>
             <div className="grid grid-cols-3 gap-3">
               <button
-                onClick={() => setMode('labels')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  mode === 'labels'
+                onClick={() => {
+                  if (!canUsePDFExport) {
+                    showUpgradeModal('PDF Export', 'pro');
+                    return;
+                  }
+                  setMode('labels');
+                }}
+                className={`p-4 rounded-xl border-2 transition-all relative ${
+                  mode === 'labels' && canUsePDFExport
                     ? 'border-[#f5576c] bg-pink-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <FiGrid className={`text-2xl mx-auto mb-2 ${mode === 'labels' ? 'text-[#f5576c]' : 'text-gray-400'}`} />
-                <p className={`text-sm font-medium ${mode === 'labels' ? 'text-[#f5576c]' : 'text-gray-600'}`}>Labels PDF</p>
+                {!canUsePDFExport && (
+                  <div className="absolute top-1 right-1">
+                    <FiLock className="text-gray-400 text-xs" />
+                  </div>
+                )}
+                <FiGrid className={`text-2xl mx-auto mb-2 ${mode === 'labels' && canUsePDFExport ? 'text-[#f5576c]' : 'text-gray-400'}`} />
+                <p className={`text-sm font-medium ${mode === 'labels' && canUsePDFExport ? 'text-[#f5576c]' : 'text-gray-600'}`}>Labels PDF</p>
               </button>
 
               <button
-                onClick={() => setMode('multipage')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  mode === 'multipage'
+                onClick={() => {
+                  if (!canUsePDFExport) {
+                    showUpgradeModal('PDF Export', 'pro');
+                    return;
+                  }
+                  setMode('multipage');
+                }}
+                className={`p-4 rounded-xl border-2 transition-all relative ${
+                  mode === 'multipage' && canUsePDFExport
                     ? 'border-[#f5576c] bg-pink-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <FiFile className={`text-2xl mx-auto mb-2 ${mode === 'multipage' ? 'text-[#f5576c]' : 'text-gray-400'}`} />
-                <p className={`text-sm font-medium ${mode === 'multipage' ? 'text-[#f5576c]' : 'text-gray-600'}`}>Multi-page</p>
+                {!canUsePDFExport && (
+                  <div className="absolute top-1 right-1">
+                    <FiLock className="text-gray-400 text-xs" />
+                  </div>
+                )}
+                <FiFile className={`text-2xl mx-auto mb-2 ${mode === 'multipage' && canUsePDFExport ? 'text-[#f5576c]' : 'text-gray-400'}`} />
+                <p className={`text-sm font-medium ${mode === 'multipage' && canUsePDFExport ? 'text-[#f5576c]' : 'text-gray-600'}`}>Multi-page</p>
               </button>
 
               <button

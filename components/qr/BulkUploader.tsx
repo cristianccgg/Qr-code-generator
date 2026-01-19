@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { FiUpload, FiDownload, FiX, FiPlay, FiAlertCircle } from 'react-icons/fi';
+import { FiUpload, FiDownload, FiX, FiPlay, FiAlertCircle, FiLock } from 'react-icons/fi';
 import { parseCSV, getValidItems, ParseCSVResult } from '@/lib/csv-parser';
 import { downloadCSVTemplate } from '@/lib/csv-template';
 import { BulkState, BulkProgress, BulkCreateResponse, ParsedCSVRow, BULK_LIMITS } from '@/types/bulk';
@@ -9,8 +9,12 @@ import BulkPreviewTable from './BulkPreviewTable';
 import BulkProgressBar from './BulkProgressBar';
 import BulkResultsSummary from './BulkResultsSummary';
 import JSZip from 'jszip';
+import { useSubscription } from '@/hooks/useSubscription';
+import { useUpgradeModal } from '@/components/billing/UpgradeModal';
 
 export default function BulkUploader() {
+  const { canUseBulkCreation, loading: subscriptionLoading } = useSubscription();
+  const { showUpgradeModal } = useUpgradeModal();
   const [state, setState] = useState<BulkState>('idle');
   const [file, setFile] = useState<File | null>(null);
   const [parseResult, setParseResult] = useState<ParseCSVResult | null>(null);
@@ -167,6 +171,37 @@ export default function BulkUploader() {
       setIsDownloading(false);
     }
   }, [results]);
+
+  // Si está cargando la subscripción, mostrar loading
+  if (subscriptionLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#f5576c]/30 border-t-[#f5576c] mb-4" />
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  // Si no tiene acceso a bulk creation, mostrar upgrade prompt
+  if (!canUseBulkCreation()) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-16 h-16 bg-gradient-to-br from-[#f5576c] to-[#f093fb] rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <FiLock className="text-white text-2xl" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Bulk Creation is a Pro Feature</h3>
+        <p className="text-gray-600 mb-6 max-w-md mx-auto">
+          Create hundreds of QR codes at once from a CSV file. Upgrade to Pro to unlock this powerful feature.
+        </p>
+        <button
+          onClick={() => showUpgradeModal('Bulk QR Creation', 'pro')}
+          className="px-6 py-3 bg-gradient-to-r from-[#f5576c] to-[#f093fb] text-white rounded-xl font-semibold hover:opacity-90 transition-opacity"
+        >
+          Upgrade to Pro
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

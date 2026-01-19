@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
       conditions.push({ userId: session.user.id, isSystem: false });
     } else {
       // System templates + user's templates (if logged in)
-      const ownershipOr = [{ isSystem: true }];
+      const ownershipOr: Record<string, unknown>[] = [{ isSystem: true }];
       if (session?.user?.id) {
         ownershipOr.push({ userId: session.user.id });
       }

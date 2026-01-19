@@ -27,6 +27,8 @@ model User {
   qrCodes       QRCode[]
   campaigns     Campaign[]
   templates     QRTemplate[]
+  subscription  Subscription?
+  usageRecords  UsageRecord[]
 
   @@map("users")
 }
@@ -221,4 +223,71 @@ model QRTemplate {
   @@index([isSystem])
   @@index([userId])
   @@index([category])
+}
+
+// Subscription model - tracks user's plan
+model Subscription {
+  id                    String             @id @default(cuid())
+  userId                String             @unique
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Plan info
+  planId                String             @default("free") // 'free', 'starter', 'pro'
+  status                SubscriptionStatus @default(ACTIVE)
+  billingCycle          BillingCycle?      // 'monthly' or 'yearly'
+
+  // Lemon Squeezy integration (for future)
+  lemonSqueezyId        String?            @unique // Lemon Squeezy subscription ID
+  lemonSqueezyCustomerId String?           // Lemon Squeezy customer ID
+  lemonSqueezyOrderId   String?            // Original order ID
+  lemonSqueezyProductId String?            // Product ID
+  lemonSqueezyVariantId String?            // Variant ID (monthly/yearly)
+
+  // Billing dates
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean            @default(false)
+  canceledAt            DateTime?
+
+  // Metadata
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  PAUSED
+  TRIALING
+  EXPIRED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+// Usage tracking - resets monthly
+model UsageRecord {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Period tracking (YYYY-MM format for easy querying)
+  period          String   // e.g., "2026-01"
+
+  // Usage counters
+  dynamicQRsCreated Int    @default(0)
+  scansTracked      Int    @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, period])
+  @@map("usage_records")
+  @@index([userId])
+  @@index([period])
 }

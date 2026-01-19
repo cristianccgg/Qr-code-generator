@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { QR_SIZES, QR_FORMATS, QR_TYPES, QRConfig, QRType, DOT_STYLES, CORNER_STYLES, DotStyle, CornerStyle } from "@/types/qr";
 import { QRTemplate } from "@/types/templates";
-import { FiLink, FiEdit3, FiType, FiMail, FiPhone, FiMessageSquare, FiWifi, FiUser, FiLock, FiUpload, FiX, FiImage, FiFolder, FiDroplet, FiGrid, FiSquare, FiCircle, FiFileText, FiSliders, FiLayout } from "react-icons/fi";
+import { FiLink, FiEdit3, FiType, FiMail, FiPhone, FiMessageSquare, FiWifi, FiUser, FiLock, FiUpload, FiX, FiImage, FiFolder, FiDroplet, FiGrid, FiSquare, FiCircle, FiFileText, FiSliders, FiLayout, FiStar } from "react-icons/fi";
 import TemplatesTab from "./templates/TemplatesTab";
 import Image from "next/image";
 import ColorPicker from "./ColorPicker";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useUpgradeModal } from "@/components/billing/UpgradeModal";
 
 interface Campaign {
   id: string;
@@ -27,6 +29,8 @@ export default function QRForm({
   onConfigChange,
 }: QRFormProps) {
   const { data: session } = useSession();
+  const { canUseLogo } = useSubscription();
+  const { showUpgradeModal } = useUpgradeModal();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
   const [mainTab, setMainTab] = useState<MainTab>('content');
@@ -502,9 +506,22 @@ export default function QRForm({
                 <div>
                   <label className="block text-white text-xs font-medium mb-2">
                     Logo (Optional)
+                    {!canUseLogo() && (
+                      <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-[#40B49D] to-[#2d8b7a] text-white text-[10px] font-bold rounded">
+                        <FiStar className="w-2.5 h-2.5" /> STARTER
+                      </span>
+                    )}
                   </label>
                   {!config.logo ? (
-                    <label className="flex items-center justify-center gap-3 w-full h-20 border-2 border-dashed border-white/30 rounded-xl hover:border-white/60 hover:bg-white/5 transition-all cursor-pointer group">
+                    <label
+                      className="flex items-center justify-center gap-3 w-full h-20 border-2 border-dashed border-white/30 rounded-xl hover:border-white/60 hover:bg-white/5 transition-all cursor-pointer group"
+                      onClick={(e) => {
+                        if (!canUseLogo()) {
+                          e.preventDefault();
+                          showUpgradeModal('Logo in QR codes', 'starter');
+                        }
+                      }}
+                    >
                       <FiUpload className="w-6 h-6 text-white/60 group-hover:text-white/80 transition-colors" />
                       <div className="text-left">
                         <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors font-semibold">
@@ -517,6 +534,11 @@ export default function QRForm({
                         className="hidden"
                         accept="image/*"
                         onChange={(e) => {
+                          if (!canUseLogo()) {
+                            e.preventDefault();
+                            showUpgradeModal('Logo in QR codes', 'starter');
+                            return;
+                          }
                           const file = e.target.files?.[0];
                           if (file) {
                             if (file.size > 2 * 1024 * 1024) {

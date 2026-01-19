@@ -3,6 +3,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { nanoid } from "nanoid";
+import {
+  checkCanCreateDynamicQR,
+  incrementDynamicQRCount,
+  userHasFeature,
+} from "@/lib/subscription";
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,6 +53,34 @@ export async function POST(req: NextRequest) {
         { error: "Type and content are required" },
         { status: 400 }
       );
+    }
+
+    // Verificar si el usuario puede crear QRs dinámicos
+    const canCreate = await checkCanCreateDynamicQR(session.user.id);
+    if (!canCreate.allowed) {
+      return NextResponse.json(
+        {
+          error: canCreate.reason,
+          code: "LIMIT_REACHED",
+          currentCount: canCreate.currentCount,
+          limit: canCreate.limit,
+        },
+        { status: 403 }
+      );
+    }
+
+    // Verificar si puede usar logo (feature de pago)
+    if (logoUrl) {
+      const canUseLogo = await userHasFeature(session.user.id, "logo");
+      if (!canUseLogo) {
+        return NextResponse.json(
+          {
+            error: "Logo feature is not available on the Free plan. Upgrade to Starter or Pro.",
+            code: "FEATURE_NOT_AVAILABLE",
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Generar shortId único
@@ -119,6 +152,9 @@ export async function POST(req: NextRequest) {
         frameText: frameText || null,
       },
     });
+
+    // Incrementar contador de QRs dinámicos creados
+    await incrementDynamicQRCount(session.user.id);
 
     return NextResponse.json({
       success: true,
