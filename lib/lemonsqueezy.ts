@@ -1,22 +1,29 @@
-// Lemon Squeezy API helper functions
+// Lemon Squeezy API helper functions using official SDK
+import {
+  lemonSqueezySetup,
+  createCheckout as lsCreateCheckout,
+  getSubscription,
+  cancelSubscription,
+  type Checkout,
+} from '@lemonsqueezy/lemonsqueezy.js';
 
-const LEMON_SQUEEZY_API_URL = 'https://api.lemonsqueezy.com/v1';
+// Initialize the Lemon Squeezy client
+let initialized = false;
 
-interface LemonSqueezyCheckoutOptions {
-  variantId: string;
-  email: string;
-  userId: string;
-  redirectUrl?: string;
+export function initLemonSqueezy() {
+  if (initialized) return;
+
+  const apiKey = process.env.LEMON_SQUEEZY_API_KEY;
+  if (!apiKey) {
+    throw new Error('LEMON_SQUEEZY_API_KEY is not set');
+  }
+
+  lemonSqueezySetup({ apiKey });
+  initialized = true;
 }
 
-interface LemonSqueezyCheckoutResponse {
-  data: {
-    id: string;
-    attributes: {
-      url: string;
-    };
-  };
-}
+// Store ID from environment
+export const STORE_ID = process.env.LEMON_SQUEEZY_STORE_ID || '';
 
 // Get variant ID based on plan and billing cycle
 export function getVariantId(planId: 'starter' | 'pro', billingCycle: 'monthly' | 'yearly'): string | null {
@@ -31,71 +38,64 @@ export function getVariantId(planId: 'starter' | 'pro', billingCycle: 'monthly' 
   return variantIds[key] || null;
 }
 
-// Create a checkout session
-export async function createCheckout(options: LemonSqueezyCheckoutOptions): Promise<string | null> {
-  const apiKey = process.env.LEMON_SQUEEZY_API_KEY;
-  const storeId = process.env.LEMON_SQUEEZY_STORE_ID;
+interface CreateCheckoutOptions {
+  variantId: string;
+  email: string;
+  userId: string;
+  userName?: string;
+  redirectUrl?: string;
+}
 
-  if (!apiKey || !storeId) {
-    console.error('Lemon Squeezy API key or store ID not configured');
+// Create a checkout session using official SDK
+export async function createCheckout(options: CreateCheckoutOptions): Promise<string | null> {
+  initLemonSqueezy();
+
+  if (!STORE_ID) {
+    console.error('Lemon Squeezy store ID not configured');
     return null;
   }
 
   try {
-    const response = await fetch(`${LEMON_SQUEEZY_API_URL}/checkouts`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/vnd.api+json',
-        'Content-Type': 'application/vnd.api+json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        data: {
-          type: 'checkouts',
-          attributes: {
-            checkout_data: {
-              email: options.email,
-              custom: {
-                user_id: options.userId,
-              },
-            },
-            checkout_options: {
-              redirect_url: options.redirectUrl || `${process.env.NEXTAUTH_URL}/dashboard?upgraded=true`,
-            },
-            product_options: {
-              redirect_url: options.redirectUrl || `${process.env.NEXTAUTH_URL}/dashboard?upgraded=true`,
-            },
-          },
-          relationships: {
-            store: {
-              data: {
-                type: 'stores',
-                id: storeId,
-              },
-            },
-            variant: {
-              data: {
-                type: 'variants',
-                id: options.variantId,
-              },
-            },
-          },
+    const checkout = await lsCreateCheckout(STORE_ID, options.variantId, {
+      checkoutData: {
+        email: options.email,
+        name: options.userName || undefined,
+        custom: {
+          user_id: options.userId,
         },
-      }),
+      },
+      productOptions: {
+        redirectUrl: options.redirectUrl || `${process.env.NEXTAUTH_URL}/dashboard?upgraded=true`,
+        receiptButtonText: 'Go to Dashboard',
+      },
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Lemon Squeezy API error:', errorText);
+    if (checkout.error) {
+      console.error('Lemon Squeezy checkout error:', checkout.error);
       return null;
     }
 
-    const data: LemonSqueezyCheckoutResponse = await response.json();
-    return data.data.attributes.url;
+    return checkout.data?.data.attributes.url || null;
   } catch (error) {
     console.error('Error creating Lemon Squeezy checkout:', error);
     return null;
   }
+}
+
+// Get subscription details
+export async function getSubscriptionDetails(subscriptionId: string) {
+  initLemonSqueezy();
+
+  const subscription = await getSubscription(subscriptionId);
+  return subscription;
+}
+
+// Cancel subscription (at period end)
+export async function cancelUserSubscription(subscriptionId: string) {
+  initLemonSqueezy();
+
+  const result = await cancelSubscription(subscriptionId);
+  return result;
 }
 
 // Verify webhook signature

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/ui/Navbar';
-import { FiCheck, FiX, FiZap, FiStar, FiAward } from 'react-icons/fi';
+import { FiCheck, FiX, FiZap, FiStar, FiAward, FiLoader } from 'react-icons/fi';
 import Link from 'next/link';
 
 const plans = [
@@ -106,6 +108,51 @@ const comparisonFeatures = [
 
 export default function PricingPage() {
   const [isYearly, setIsYearly] = useState(true);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  const handleSubscribe = async (planId: string) => {
+    // For free plan, just redirect to signup
+    if (planId === 'free') {
+      router.push('/auth/signup');
+      return;
+    }
+
+    // If not logged in, redirect to signup with plan info
+    if (status !== 'authenticated') {
+      router.push(`/auth/signup?plan=${planId}&billing=${isYearly ? 'yearly' : 'monthly'}`);
+      return;
+    }
+
+    // Create checkout session
+    setLoadingPlan(planId);
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId,
+          billingCycle: isYearly ? 'yearly' : 'monthly',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.checkoutUrl) {
+        // Redirect to Lemon Squeezy checkout
+        window.location.href = data.checkoutUrl;
+      } else {
+        console.error('Checkout error:', data.error);
+        alert(data.error || 'Failed to create checkout. Please try again.');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f5576c] via-[#8538a6] to-[#7386bf] relative overflow-hidden">
@@ -231,9 +278,10 @@ export default function PricingPage() {
                   <p className="text-white/70 text-sm mb-6">{plan.description}</p>
 
                   {/* CTA Button */}
-                  <Link
-                    href={`${plan.ctaLink}${plan.hasBilling ? `&billing=${isYearly ? 'yearly' : 'monthly'}` : ''}`}
-                    className={`block w-full py-3 px-4 rounded-xl text-center font-bold transition-all ${
+                  <button
+                    onClick={() => handleSubscribe(plan.name.toLowerCase())}
+                    disabled={loadingPlan === plan.name.toLowerCase()}
+                    className={`block w-full py-3 px-4 rounded-xl text-center font-bold transition-all disabled:opacity-70 disabled:cursor-not-allowed ${
                       plan.popular
                         ? 'bg-gradient-to-r from-[#40B49D] to-[#2d8b7a] text-white hover:shadow-lg hover:shadow-[#40B49D]/30'
                         : plan.badge
@@ -241,8 +289,15 @@ export default function PricingPage() {
                         : 'bg-white/20 text-white hover:bg-white/30'
                     }`}
                   >
-                    {plan.cta}
-                  </Link>
+                    {loadingPlan === plan.name.toLowerCase() ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <FiLoader className="animate-spin" />
+                        Processing...
+                      </span>
+                    ) : (
+                      plan.cta
+                    )}
+                  </button>
 
                   {/* Features list */}
                   <ul className="mt-6 space-y-3">

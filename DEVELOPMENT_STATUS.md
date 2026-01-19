@@ -207,20 +207,15 @@ model UsageRecord {
 - [x] Bloquear features según plan en APIs (analytics, bulk, campaigns)
 - [x] Integrar verificación de límites en endpoints existentes
 
-### Prioridad 1: Integración de Pagos (Lemon Squeezy)
-Merchant of Record para recibir pagos globales sin crear empresa en USA.
-- [ ] Crear cuenta en Lemon Squeezy
-- [ ] Configurar productos (Starter mensual/anual, Pro mensual/anual)
-- [ ] Integrar SDK de Lemon Squeezy
-- [ ] Webhooks para activar/cancelar suscripciones
-- [ ] Portal de cliente para gestionar suscripción
-
-**¿Por qué Lemon Squeezy?**
-- No requiere empresa, acepta individuos
-- Paga a Colombia via PayPal o transferencia
-- Maneja impuestos globales (IVA, sales tax)
-- Fee: 5% + $0.50 por transacción
-- API moderna, fácil integración con Next.js
+### ~~Prioridad 1: Integración de Pagos (Lemon Squeezy)~~ ✅ COMPLETADO
+- [x] Crear cuenta en Lemon Squeezy (Store ID: 276281)
+- [x] Configurar productos (4 variantes: Starter/Pro × mensual/anual)
+- [x] Integrar SDK oficial `@lemonsqueezy/lemonsqueezy.js`
+- [x] Endpoint `/api/checkout` para crear sesiones de pago
+- [x] Webhook `/api/webhooks/lemonsqueezy` para procesar eventos
+- [x] Botones de pricing conectados al checkout
+- [ ] Configurar webhook URL en Lemon Squeezy dashboard (requiere URL pública)
+- [ ] Probar flujo completo de pago
 
 ### Prioridad 2: Templates Prediseñados
 - [ ] Galería de templates por industria
@@ -298,10 +293,14 @@ NEXTAUTH_URL=            # URL base (http://localhost:3000 en dev)
 GOOGLE_CLIENT_ID=        # Para OAuth (opcional)
 GOOGLE_CLIENT_SECRET=    # Para OAuth (opcional)
 
-# Pagos (futuro - Lemon Squeezy)
-# LEMON_SQUEEZY_API_KEY=       # API key de Lemon Squeezy
-# LEMON_SQUEEZY_STORE_ID=      # ID de la tienda
-# LEMON_SQUEEZY_WEBHOOK_SECRET= # Secret para verificar webhooks
+# Pagos (Lemon Squeezy) ✅ CONFIGURADO
+LEMON_SQUEEZY_API_KEY=                       # API key
+LEMON_SQUEEZY_STORE_ID=                      # Store ID (276281)
+LEMON_SQUEEZY_WEBHOOK_SECRET=                # Webhook secret
+LEMON_SQUEEZY_STARTER_MONTHLY_VARIANT_ID=    # 1233898
+LEMON_SQUEEZY_STARTER_YEARLY_VARIANT_ID=     # 1233949
+LEMON_SQUEEZY_PRO_MONTHLY_VARIANT_ID=        # 1233960
+LEMON_SQUEEZY_PRO_YEARLY_VARIANT_ID=         # 1233961
 ```
 
 ---
@@ -333,10 +332,8 @@ GOOGLE_CLIENT_SECRET=    # Para OAuth (opcional)
 
 ## Notas para Próxima Sesión
 
-1. **Sistema de planes completado** - modelos y funciones listas en `lib/plans.ts` y `lib/subscription.ts`
-2. **Falta integrar** las funciones de límites en los endpoints existentes (crear QR, tracking de scans)
-3. **Falta UI** para mostrar uso actual vs límites del plan en el dashboard
-4. **Lemon Squeezy** es el siguiente paso - campos ya preparados en modelo `Subscription`
-5. Los estilos ya se guardan en DB, listos para edición futura
-6. El generador (`lib/qr-generator.ts`) ya está preparado para recibir todas las opciones
-7. La página de precios ya está lista en `/pricing` (actualizar precios si es necesario)
+1. **Lemon Squeezy integrado** - falta configurar webhook URL cuando tengas URL pública (ngrok o deploy)
+2. **Para probar pagos**: ir a `/pricing`, click en plan → redirige a checkout de Lemon Squeezy
+3. **Webhook URL** a configurar en Lemon Squeezy: `https://tu-dominio.com/api/webhooks/lemonsqueezy`
+4. Los estilos ya se guardan en DB, listos para edición futura
+5. El generador (`lib/qr-generator.ts`) ya está preparado para recibir todas las opciones
