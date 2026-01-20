@@ -92,14 +92,14 @@ export default function QRForm({
   return (
     <div className="w-full">
       {/* Main Tab Headers - Content / Design */}
-      <div className="flex border-b border-white/20">
+      <div className="flex p-2 gap-2 bg-white/5">
         <button
           type="button"
           onClick={() => setMainTab('content')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition-all ${
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all ${
             mainTab === 'content'
-              ? 'bg-white/20 text-white border-b-2 border-white'
-              : 'text-white/60 hover:text-white hover:bg-white/5'
+              ? 'bg-white text-gray-900 shadow-lg'
+              : 'text-white/70 hover:text-white hover:bg-white/10'
           }`}
         >
           <FiFileText className="text-base" />
@@ -108,10 +108,10 @@ export default function QRForm({
         <button
           type="button"
           onClick={() => setMainTab('design')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition-all ${
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all ${
             mainTab === 'design'
-              ? 'bg-white/20 text-white border-b-2 border-white'
-              : 'text-white/60 hover:text-white hover:bg-white/5'
+              ? 'bg-white text-gray-900 shadow-lg'
+              : 'text-white/70 hover:text-white hover:bg-white/10'
           }`}
         >
           <FiSliders className="text-base" />
@@ -124,12 +124,12 @@ export default function QRForm({
         {/* Content Tab - Renderizado inline para evitar re-mount */}
         <div className={mainTab === 'content' ? 'block' : 'hidden'}>
           <div className="space-y-4">
-            {/* QR Type Selector - Compacto */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-              <label className="block text-white text-xs font-semibold mb-2">
+            {/* QR Type Selector - Clean grid */}
+            <div>
+              <label className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                 QR Type
               </label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="grid grid-cols-4 lg:grid-cols-7 gap-1.5">
                 {QR_TYPES.map((type) => {
                   const Icon = getTypeIcon(type.value);
                   return (
@@ -137,14 +137,14 @@ export default function QRForm({
                       key={type.value}
                       type="button"
                       onClick={() => handleTypeChange(type.value)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all text-xs ${
+                      className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl border transition-all ${
                         config.type === type.value
-                          ? 'bg-white text-[#f5576c] border-white shadow-md font-semibold'
-                          : 'bg-white/5 text-white/80 border-white/20 hover:bg-white/10 hover:border-white/40'
+                          ? 'bg-white text-gray-900 border-white shadow-lg'
+                          : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:border-white/20'
                       }`}
                     >
-                      <Icon className="text-sm" />
-                      <span>{type.label.split(' ')[0]}</span>
+                      <Icon className={`text-lg ${config.type === type.value ? 'text-[#8538a6]' : ''}`} />
+                      <span className="text-[10px] font-medium">{type.label.split(' ')[0]}</span>
                     </button>
                   );
                 })}
@@ -156,12 +156,12 @@ export default function QRForm({
               {/* URL Type */}
               {config.type === 'url' && (
                 <div>
-                  <label htmlFor="url" className="block text-white text-sm font-semibold mb-2">
+                  <label htmlFor="url" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                     Website URL
                   </label>
-                  <div className="flex gap-2">
-                    <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
-                      <FiLink className="text-white text-lg" />
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <FiLink className="text-base" />
                     </div>
                     <input
                       type="text"
@@ -169,7 +169,7 @@ export default function QRForm({
                       value={config.url}
                       onChange={(e) => onConfigChange({ ...config, url: e.target.value })}
                       placeholder="https://example.com"
-                      className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
@@ -178,12 +178,12 @@ export default function QRForm({
               {/* Text Type */}
               {config.type === 'text' && (
                 <div>
-                  <label htmlFor="text" className="block text-white text-sm font-semibold mb-2">
+                  <label htmlFor="text" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                     Text Content
                   </label>
-                  <div className="flex gap-2">
-                    <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
-                      <FiType className="text-white text-lg" />
+                  <div className="relative">
+                    <div className="absolute left-3 top-3 text-gray-400">
+                      <FiType className="text-base" />
                     </div>
                     <textarea
                       id="text"
@@ -191,7 +191,7 @@ export default function QRForm({
                       onChange={(e) => onConfigChange({ ...config, text: e.target.value })}
                       placeholder="Enter any text..."
                       rows={2}
-                      className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all resize-none text-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all resize-none text-sm text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
@@ -200,12 +200,12 @@ export default function QRForm({
               {/* Email Type */}
               {config.type === 'email' && (
                 <div>
-                  <label htmlFor="email" className="block text-white text-sm font-semibold mb-2">
+                  <label htmlFor="email" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                     Email Address
                   </label>
-                  <div className="flex gap-2">
-                    <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
-                      <FiMail className="text-white text-lg" />
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <FiMail className="text-base" />
                     </div>
                     <input
                       type="email"
@@ -213,7 +213,7 @@ export default function QRForm({
                       value={config.email || ''}
                       onChange={(e) => onConfigChange({ ...config, email: e.target.value })}
                       placeholder="email@example.com"
-                      className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
@@ -222,12 +222,12 @@ export default function QRForm({
               {/* Phone Type */}
               {config.type === 'phone' && (
                 <div>
-                  <label htmlFor="phone" className="block text-white text-sm font-semibold mb-2">
+                  <label htmlFor="phone" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                     Phone Number
                   </label>
-                  <div className="flex gap-2">
-                    <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
-                      <FiPhone className="text-white text-lg" />
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <FiPhone className="text-base" />
                     </div>
                     <input
                       type="tel"
@@ -235,7 +235,7 @@ export default function QRForm({
                       value={config.phone || ''}
                       onChange={(e) => onConfigChange({ ...config, phone: e.target.value })}
                       placeholder="+1234567890"
-                      className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
@@ -244,12 +244,12 @@ export default function QRForm({
               {/* SMS Type */}
               {config.type === 'sms' && (
                 <div>
-                  <label htmlFor="sms" className="block text-white text-sm font-semibold mb-2">
+                  <label htmlFor="sms" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                     Phone Number (SMS)
                   </label>
-                  <div className="flex gap-2">
-                    <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
-                      <FiMessageSquare className="text-white text-lg" />
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <FiMessageSquare className="text-base" />
                     </div>
                     <input
                       type="tel"
@@ -257,7 +257,7 @@ export default function QRForm({
                       value={config.sms || ''}
                       onChange={(e) => onConfigChange({ ...config, sms: e.target.value })}
                       placeholder="+1234567890"
-                      className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
@@ -267,12 +267,12 @@ export default function QRForm({
               {config.type === 'wifi' && (
                 <div className="space-y-3">
                   <div>
-                    <label htmlFor="wifiSSID" className="block text-white text-sm font-semibold mb-2">
+                    <label htmlFor="wifiSSID" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                       Network Name (SSID)
                     </label>
-                    <div className="flex gap-2">
-                      <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
-                        <FiWifi className="text-white text-lg" />
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <FiWifi className="text-base" />
                       </div>
                       <input
                         type="text"
@@ -280,19 +280,19 @@ export default function QRForm({
                         value={config.wifiSSID || ''}
                         onChange={(e) => onConfigChange({ ...config, wifiSSID: e.target.value })}
                         placeholder="My WiFi Network"
-                        className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                        className="w-full pl-10 pr-4 py-3 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label htmlFor="wifiPassword" className="block text-white text-xs font-medium mb-1">
+                      <label htmlFor="wifiPassword" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                         Password
                       </label>
-                      <div className="flex gap-2">
-                        <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-lg p-2 min-w-[36px]">
-                          <FiLock className="text-white text-sm" />
+                      <div className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                          <FiLock className="text-sm" />
                         </div>
                         <input
                           type="text"
@@ -300,20 +300,20 @@ export default function QRForm({
                           value={config.wifiPassword || ''}
                           onChange={(e) => onConfigChange({ ...config, wifiPassword: e.target.value })}
                           placeholder="password"
-                          className="flex-1 px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                          className="w-full pl-9 pr-3 py-2.5 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label htmlFor="wifiEncryption" className="block text-white text-xs font-medium mb-1">
+                      <label htmlFor="wifiEncryption" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                         Security
                       </label>
                       <select
                         id="wifiEncryption"
                         value={config.wifiEncryption || 'WPA'}
                         onChange={(e) => onConfigChange({ ...config, wifiEncryption: e.target.value as 'WPA' | 'WEP' | 'nopass' })}
-                        className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                        className="w-full px-3 py-2.5 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900"
                       >
                         <option value="WPA">WPA/WPA2</option>
                         <option value="WEP">WEP</option>
@@ -328,12 +328,12 @@ export default function QRForm({
               {config.type === 'vcard' && (
                 <div className="space-y-3">
                   <div>
-                    <label htmlFor="vcardName" className="block text-white text-sm font-semibold mb-2">
+                    <label htmlFor="vcardName" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                       Full Name *
                     </label>
-                    <div className="flex gap-2">
-                      <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-xl p-2.5 min-w-[44px]">
-                        <FiUser className="text-white text-lg" />
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <FiUser className="text-base" />
                       </div>
                       <input
                         type="text"
@@ -341,14 +341,14 @@ export default function QRForm({
                         value={config.vcardName || ''}
                         onChange={(e) => onConfigChange({ ...config, vcardName: e.target.value })}
                         placeholder="John Doe"
-                        className="flex-1 px-3 py-2.5 bg-white/90 backdrop-blur rounded-xl border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                        className="w-full pl-10 pr-4 py-3 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label htmlFor="vcardPhone" className="block text-white text-xs font-medium mb-1">
+                      <label htmlFor="vcardPhone" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                         Phone
                       </label>
                       <input
@@ -357,11 +357,11 @@ export default function QRForm({
                         value={config.vcardPhone || ''}
                         onChange={(e) => onConfigChange({ ...config, vcardPhone: e.target.value })}
                         placeholder="+1234567890"
-                        className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                        className="w-full px-3 py-2.5 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                     <div>
-                      <label htmlFor="vcardEmail" className="block text-white text-xs font-medium mb-1">
+                      <label htmlFor="vcardEmail" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                         Email
                       </label>
                       <input
@@ -370,13 +370,13 @@ export default function QRForm({
                         value={config.vcardEmail || ''}
                         onChange={(e) => onConfigChange({ ...config, vcardEmail: e.target.value })}
                         placeholder="john@example.com"
-                        className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                        className="w-full px-3 py-2.5 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="vcardOrganization" className="block text-white text-xs font-medium mb-1">
+                    <label htmlFor="vcardOrganization" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                       Organization
                     </label>
                     <input
@@ -385,7 +385,7 @@ export default function QRForm({
                       value={config.vcardOrganization || ''}
                       onChange={(e) => onConfigChange({ ...config, vcardOrganization: e.target.value })}
                       placeholder="Company Name"
-                      className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                     />
                   </div>
                 </div>
@@ -393,12 +393,12 @@ export default function QRForm({
 
               {/* Description (común para todos) */}
               <div>
-                <label htmlFor="description" className="block text-white text-xs font-medium mb-1">
+                <label htmlFor="description" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                   Description (optional)
                 </label>
-                <div className="flex gap-2">
-                  <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-lg p-2 min-w-[36px]">
-                    <FiEdit3 className="text-white text-sm" />
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <FiEdit3 className="text-sm" />
                   </div>
                   <input
                     type="text"
@@ -406,7 +406,7 @@ export default function QRForm({
                     value={config.description}
                     onChange={(e) => onConfigChange({ ...config, description: e.target.value })}
                     placeholder="Label for your QR code"
-                    className="flex-1 px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                    className="w-full pl-9 pr-4 py-2.5 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-400"
                   />
                 </div>
               </div>
@@ -414,19 +414,19 @@ export default function QRForm({
               {/* Campaign Selector (solo para usuarios logueados) */}
               {session && (
                 <div>
-                  <label htmlFor="campaign" className="block text-white text-xs font-medium mb-1">
+                  <label htmlFor="campaign" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                     Campaign (optional)
                   </label>
-                  <div className="flex gap-2">
-                    <div className="flex items-center justify-center bg-white/20 backdrop-blur rounded-lg p-2 min-w-[36px]">
-                      <FiFolder className="text-white text-sm" />
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <FiFolder className="text-sm" />
                     </div>
                     <select
                       id="campaign"
                       value={config.campaignId || ''}
                       onChange={(e) => onConfigChange({ ...config, campaignId: e.target.value || undefined })}
                       disabled={isLoadingCampaigns}
-                      className="flex-1 px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-transparent focus:border-white focus:bg-white outline-none transition-all text-sm"
+                      className="w-full pl-9 pr-4 py-2.5 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none transition-all text-sm text-gray-900 appearance-none cursor-pointer"
                     >
                       <option value="">No campaign</option>
                       {campaigns.map((campaign) => (
@@ -446,42 +446,42 @@ export default function QRForm({
         <div className={mainTab === 'design' ? 'block' : 'hidden'}>
           <div className="space-y-4">
             {/* Design Sub-tabs */}
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 p-1 bg-white/5 rounded-xl">
               <button
                 type="button"
                 onClick={() => setDesignTab('colors')}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                   designTab === 'colors'
-                    ? 'bg-white text-[#f5576c] shadow-lg'
-                    : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                    ? 'bg-white text-gray-900 shadow-md'
+                    : 'text-white/70 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 <FiDroplet className="text-sm" />
-                Colors & Logo
+                <span className="hidden sm:inline">Colors</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDesignTab('style')}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                   designTab === 'style'
-                    ? 'bg-white text-[#f5576c] shadow-lg'
-                    : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                    ? 'bg-white text-gray-900 shadow-md'
+                    : 'text-white/70 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 <FiGrid className="text-sm" />
-                Style
+                <span className="hidden sm:inline">Style</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDesignTab('templates')}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                   designTab === 'templates'
-                    ? 'bg-white text-[#f5576c] shadow-lg'
-                    : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                    ? 'bg-white text-gray-900 shadow-md'
+                    : 'text-white/70 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 <FiLayout className="text-sm" />
-                Templates
+                <span className="hidden sm:inline">Templates</span>
               </button>
             </div>
 
@@ -502,19 +502,19 @@ export default function QRForm({
                   />
                 </div>
 
-                {/* Logo Upload - Compacto */}
+                {/* Logo Upload - Clean design */}
                 <div>
-                  <label className="block text-white text-xs font-medium mb-2">
+                  <label className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                     Logo (Optional)
                     {!canUseLogo() && (
-                      <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-[#40B49D] to-[#2d8b7a] text-white text-[10px] font-bold rounded">
-                        <FiStar className="w-2.5 h-2.5" /> STARTER
+                      <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 bg-[#40B49D] text-white text-[10px] font-bold rounded normal-case">
+                        <FiStar className="w-2.5 h-2.5" /> PRO
                       </span>
                     )}
                   </label>
                   {!config.logo ? (
                     <label
-                      className="flex items-center justify-center gap-3 w-full h-20 border-2 border-dashed border-white/30 rounded-xl hover:border-white/60 hover:bg-white/5 transition-all cursor-pointer group"
+                      className="flex items-center justify-center gap-3 w-full h-20 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer group"
                       onClick={(e) => {
                         if (!canUseLogo()) {
                           e.preventDefault();
@@ -522,9 +522,9 @@ export default function QRForm({
                         }
                       }}
                     >
-                      <FiUpload className="w-6 h-6 text-white/60 group-hover:text-white/80 transition-colors" />
+                      <FiUpload className="w-5 h-5 text-white/50 group-hover:text-white/70 transition-colors" />
                       <div className="text-left">
-                        <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors font-semibold">
+                        <p className="text-xs text-white/60 group-hover:text-white/80 transition-colors font-medium">
                           Click to upload
                         </p>
                         <p className="text-[10px] text-white/40">PNG, JPG (max 2MB)</p>
@@ -556,7 +556,7 @@ export default function QRForm({
                       />
                     </label>
                   ) : (
-                    <div className="relative w-full h-20 border-2 border-white/30 rounded-xl overflow-hidden bg-white/10 backdrop-blur">
+                    <div className="relative w-full h-20 bg-white rounded-xl overflow-hidden">
                       <Image
                         src={config.logo}
                         alt="Logo"
@@ -567,12 +567,12 @@ export default function QRForm({
                       <button
                         type="button"
                         onClick={() => onConfigChange({ ...config, logo: undefined })}
-                        className="absolute top-1 right-1 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                        className="absolute top-1.5 right-1.5 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors shadow-md"
                         title="Remove logo"
                       >
                         <FiX className="w-3 h-3" />
                       </button>
-                      <div className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/50 backdrop-blur rounded text-white text-[10px]">
+                      <div className="absolute bottom-1.5 left-1.5 px-2 py-0.5 bg-gray-900/70 backdrop-blur rounded-md text-white text-[10px] font-medium">
                         <FiImage className="inline mr-1" />
                         Logo added
                       </div>
@@ -583,14 +583,14 @@ export default function QRForm({
                 {/* Size & Format */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="size" className="block text-white text-xs font-medium mb-1">
+                    <label htmlFor="size" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                       Size
                     </label>
                     <select
                       id="size"
                       value={config.size}
                       onChange={(e) => onConfigChange({ ...config, size: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-none outline-none text-sm"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none text-sm text-gray-900"
                     >
                       {QR_SIZES.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -600,14 +600,14 @@ export default function QRForm({
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="format" className="block text-white text-xs font-medium mb-1">
+                    <label htmlFor="format" className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                       Format
                     </label>
                     <select
                       id="format"
                       value={config.format}
                       onChange={(e) => onConfigChange({ ...config, format: e.target.value as 'png' | 'svg' })}
-                      className="w-full px-3 py-2 bg-white/90 backdrop-blur rounded-lg border-none outline-none text-sm"
+                      className="w-full px-3 py-2.5 bg-white rounded-xl border-2 border-transparent focus:border-[#8538a6]/50 outline-none text-sm text-gray-900"
                     >
                       {QR_FORMATS.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -625,7 +625,7 @@ export default function QRForm({
               <div className="space-y-4">
                 {/* Dot Style Selector */}
                 <div>
-                  <label className="block text-white text-xs font-medium mb-2">
+                  <label className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                     Dot Style
                   </label>
                   <div className="grid grid-cols-6 gap-1.5">
@@ -672,7 +672,7 @@ export default function QRForm({
 
                 {/* Corner Style Selector */}
                 <div>
-                  <label className="block text-white text-xs font-medium mb-2">
+                  <label className="block text-white/80 text-xs font-medium mb-2 uppercase tracking-wide">
                     Corner Style
                   </label>
                   <div className="grid grid-cols-3 gap-2">

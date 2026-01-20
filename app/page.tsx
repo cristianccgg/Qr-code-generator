@@ -131,19 +131,41 @@ export default function Home() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid lg:grid-cols-2 gap-4 lg:gap-8 max-w-7xl mx-auto pb-8 lg:pb-16">
-              {/* Preview Section - First on mobile, second on desktop */}
-              <div className="w-full order-first lg:order-last">
-                <QRPreview config={config} />
+            <div className="max-w-6xl mx-auto pb-8 lg:pb-16">
+              {/* Main Generator Card */}
+              <div className="bg-white/[0.08] backdrop-blur-2xl rounded-[2rem] lg:rounded-[2.5rem] border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden">
+                {/* Card Header - Subtle top accent */}
+                <div className="h-1 bg-gradient-to-r from-[#40B49D] via-[#f2cb57] to-[#f5576c]"></div>
+
+                <div className="grid lg:grid-cols-2">
+                  {/* Form Section */}
+                  <div className="order-last lg:order-first lg:border-r border-white/[0.1]">
+                    <QRForm
+                      config={config}
+                      onConfigChange={setConfig}
+                    />
+                  </div>
+
+                  {/* Preview Section */}
+                  <div className="order-first lg:order-last bg-gradient-to-br from-white/[0.05] to-transparent">
+                    <QRPreview config={config} />
+                  </div>
+                </div>
               </div>
 
-              {/* Form Section - Second on mobile, first on desktop */}
-              <div className="w-full order-last lg:order-first">
-                <div className="bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
-                  <QRForm
-                    config={config}
-                    onConfigChange={setConfig}
-                  />
+              {/* Trust indicators - Below the generator */}
+              <div className="flex flex-wrap items-center justify-center gap-4 lg:gap-8 mt-6 lg:mt-8 text-white/60 text-xs lg:text-sm">
+                <div className="flex items-center gap-2">
+                  <FiCheck className="text-[#40B49D]" />
+                  <span>Free forever</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiCheck className="text-[#40B49D]" />
+                  <span>No signup required</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiCheck className="text-[#40B49D]" />
+                  <span>High-resolution download</span>
                 </div>
               </div>
             </div>

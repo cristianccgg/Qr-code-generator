@@ -325,86 +325,98 @@ export default function QRPreview({ config }: QRPreviewProps) {
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-3 lg:gap-6 p-4 lg:p-6">
-      {/* QR Container - Compacto en mobile, grande en desktop */}
-      <div className="relative w-full max-w-[220px] lg:max-w-[400px]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#40B49D]/20 to-[#f5576c]/20 rounded-2xl lg:rounded-3xl blur-xl"></div>
-
-        <div className="relative bg-white rounded-2xl lg:rounded-3xl p-3 lg:p-8 shadow-2xl">
-          {/* Badge con tipo de QR */}
-          <div className="absolute -top-2.5 lg:-top-3 left-1/2 -translate-x-1/2 px-3 lg:px-4 py-1 lg:py-1.5 bg-gradient-to-r from-[#f5576c] to-[#8538a6] rounded-full">
-            <span className="text-white text-[10px] lg:text-xs font-semibold">{getTypeLabel()}</span>
-          </div>
-
-          {/* QR Code */}
-          <div className="flex flex-col items-center mt-2 lg:mt-4">
-            {isGenerating ? (
-              <div className="w-44 h-44 lg:w-80 lg:h-80 flex items-center justify-center">
-                <div className="relative">
-                  <div className="animate-spin rounded-full h-10 w-10 lg:h-16 lg:w-16 border-4 border-[#f5576c]/30 border-t-[#f5576c]"></div>
-                </div>
-              </div>
-            ) : qrDataURL ? (
-              <div className="w-44 h-44 lg:w-80 lg:h-80 bg-white rounded-xl lg:rounded-2xl shadow-lg flex items-center justify-center">
-                <img
-                  src={qrDataURL}
-                  alt="QR Code"
-                  className="w-full h-full object-contain p-1 lg:p-2"
-                />
-              </div>
-            ) : (
-              <div className="w-44 h-44 lg:w-80 lg:h-80 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl lg:rounded-2xl border-2 border-dashed border-gray-300">
-                <div className="text-center px-4">
-                  <div className="w-10 h-10 lg:w-16 lg:h-16 mx-auto mb-2 lg:mb-4 rounded-full bg-gray-200 flex items-center justify-center">
-                    <svg className="w-5 h-5 lg:w-8 lg:h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </div>
-                  <p className="text-gray-400 text-xs lg:text-sm font-medium">Enter content</p>
-                </div>
-              </div>
-            )}
-
-            {/* Description - Solo en desktop o si hay descripción */}
-            {config.description && qrDataURL && (
-              <div className="text-center mt-3 lg:mt-6 animate-fadeIn">
-                <h3 className="text-sm lg:text-xl font-bold text-gray-800 truncate max-w-[200px] lg:max-w-none">{config.description}</h3>
-              </div>
-            )}
-          </div>
+    <div className="w-full flex flex-col items-center gap-4 lg:gap-6 p-4 lg:p-8">
+      {/* QR Preview Label - Mobile only */}
+      <div className="lg:hidden w-full">
+        <div className="flex items-center justify-center gap-2 text-white/70 text-xs font-medium">
+          <div className="h-px flex-1 bg-white/20"></div>
+          <span>PREVIEW</span>
+          <div className="h-px flex-1 bg-white/20"></div>
         </div>
       </div>
 
-      {/* Messages - Compactos */}
+      {/* QR Container - Clean modern design */}
+      <div className="relative w-full max-w-[200px] lg:max-w-[320px]">
+        {/* Subtle glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl lg:rounded-3xl blur-2xl scale-110"></div>
+
+        <div className="relative bg-white rounded-2xl lg:rounded-3xl p-4 lg:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
+          {/* QR Code */}
+          <div className="flex flex-col items-center">
+            {isGenerating ? (
+              <div className="w-[168px] h-[168px] lg:w-[272px] lg:h-[272px] flex items-center justify-center">
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-10 w-10 lg:h-12 lg:w-12 border-3 border-gray-200 border-t-[#8538a6]"></div>
+                </div>
+              </div>
+            ) : qrDataURL ? (
+              <div className="w-[168px] h-[168px] lg:w-[272px] lg:h-[272px] flex items-center justify-center">
+                <img
+                  src={qrDataURL}
+                  alt="QR Code"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="w-[168px] h-[168px] lg:w-[272px] lg:h-[272px] flex items-center justify-center bg-gray-50 rounded-xl lg:rounded-2xl border-2 border-dashed border-gray-200">
+                <div className="text-center px-4">
+                  <div className="w-12 h-12 lg:w-14 lg:h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <svg className="w-6 h-6 lg:w-7 lg:h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-400 text-xs lg:text-sm font-medium">Your QR code</p>
+                  <p className="text-gray-300 text-[10px] lg:text-xs mt-1">Enter content to preview</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Type Badge - Below QR */}
+          <div className="flex justify-center mt-3 lg:mt-4">
+            <div className="px-3 py-1 bg-gradient-to-r from-[#f5576c]/10 to-[#8538a6]/10 rounded-full border border-[#8538a6]/20">
+              <span className="text-[#8538a6] text-[10px] lg:text-xs font-semibold">{getTypeLabel()}</span>
+            </div>
+          </div>
+
+          {/* Description */}
+          {config.description && qrDataURL && (
+            <div className="text-center mt-2 lg:mt-3">
+              <h3 className="text-xs lg:text-sm font-semibold text-gray-700 truncate">{config.description}</h3>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Messages */}
       {(successMessage || errorMessage) && (
-        <div className="w-full max-w-[280px] lg:max-w-md">
+        <div className="w-full max-w-[280px] lg:max-w-sm">
           {successMessage && (
-            <div className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-2 rounded-xl shadow-lg animate-slideInUp">
-              <FiCheckCircle className="text-base" />
+            <div className="flex items-center gap-2 bg-[#40B49D] text-white px-4 py-2.5 rounded-xl shadow-lg animate-slideInUp">
+              <FiCheckCircle className="text-base flex-shrink-0" />
               <p className="text-xs font-medium">{successMessage}</p>
             </div>
           )}
           {errorMessage && (
-            <div className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-2 rounded-xl shadow-lg animate-shake">
-              <FiAlertCircle className="text-base" />
+            <div className="flex items-center gap-2 bg-red-500 text-white px-4 py-2.5 rounded-xl shadow-lg animate-shake">
+              <FiAlertCircle className="text-base flex-shrink-0" />
               <p className="text-xs font-medium flex-1">{errorMessage}</p>
             </div>
           )}
         </div>
       )}
 
-      {/* Download Buttons - Compactos en mobile */}
-      <div className="w-full max-w-[280px] lg:max-w-md flex gap-2 lg:gap-3">
+      {/* Download Buttons - Modern flat design */}
+      <div className="w-full max-w-[280px] lg:max-w-sm flex gap-2">
         {/* Main Download Button (PNG/SVG) */}
         <button
           onClick={handleDownload}
           disabled={!qrDataURL}
-          className="flex-1 group relative px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-[#f5576c] to-[#8538a6] text-white font-bold text-sm lg:text-base rounded-xl shadow-xl hover:shadow-2xl disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+          className="flex-1 group relative px-4 py-3 lg:py-3.5 bg-white text-gray-900 font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl disabled:bg-white/50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:shadow-none transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
         >
-          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-          <span className="relative flex items-center justify-center gap-2">
-            <FiDownload className="text-base lg:text-lg" />
-            {config.format.toUpperCase()}
+          <span className="flex items-center justify-center gap-2">
+            <FiDownload className="text-base" />
+            Download {config.format.toUpperCase()}
           </span>
         </button>
 
@@ -412,10 +424,10 @@ export default function QRPreview({ config }: QRPreviewProps) {
         <button
           onClick={handleDownloadPDF}
           disabled={!qrDataURL}
-          className="px-4 lg:px-6 py-3 lg:py-4 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-bold text-sm lg:text-base rounded-xl hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+          className="px-4 py-3 lg:py-3.5 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold text-sm rounded-xl hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
         >
-          <span className="flex items-center justify-center gap-1.5 lg:gap-2">
-            <FiFile className="text-base lg:text-lg" />
+          <span className="flex items-center justify-center gap-1.5">
+            <FiFile className="text-base" />
             PDF
           </span>
         </button>
