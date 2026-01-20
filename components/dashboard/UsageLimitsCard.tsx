@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FiZap, FiActivity, FiArrowUp } from 'react-icons/fi'
+import { FiZap, FiActivity, FiArrowUp, FiSettings } from 'react-icons/fi'
 import Link from 'next/link'
 
 interface SubscriptionStatus {
@@ -99,15 +99,25 @@ export default function UsageLimitsCard() {
             </span>
             <p className="text-white/90 text-sm mt-2">{status.plan.description}</p>
           </div>
-          {status.plan.id === 'free' && (
-            <Link
-              href="/pricing"
-              className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors"
-            >
-              <FiArrowUp className="text-purple-600" />
-              Upgrade
-            </Link>
-          )}
+          <div className="flex items-center gap-2">
+            {status.plan.id === 'free' ? (
+              <Link
+                href="/pricing"
+                className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors"
+              >
+                <FiArrowUp className="text-purple-600" />
+                Upgrade
+              </Link>
+            ) : (
+              <Link
+                href="/dashboard/subscription"
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium text-white transition-colors"
+              >
+                <FiSettings />
+                Manage
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 

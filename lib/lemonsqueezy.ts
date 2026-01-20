@@ -98,6 +98,34 @@ export async function cancelUserSubscription(subscriptionId: string) {
   return result;
 }
 
+// Get customer portal URL
+export async function getCustomerPortalUrl(customerId: string): Promise<string | null> {
+  initLemonSqueezy();
+
+  try {
+    const response = await fetch(
+      `https://api.lemonsqueezy.com/v1/customers/${customerId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.LEMON_SQUEEZY_API_KEY}`,
+          'Accept': 'application/vnd.api+json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Failed to get customer:', await response.text());
+      return null;
+    }
+
+    const data = await response.json();
+    return data.data?.attributes?.urls?.customer_portal || null;
+  } catch (error) {
+    console.error('Error getting customer portal URL:', error);
+    return null;
+  }
+}
+
 // Verify webhook signature
 export function verifyWebhookSignature(payload: string, signature: string): boolean {
   const crypto = require('crypto');
