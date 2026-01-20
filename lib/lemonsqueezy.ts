@@ -65,7 +65,7 @@ export async function createCheckout(options: CreateCheckoutOptions): Promise<st
         },
       },
       productOptions: {
-        redirectUrl: options.redirectUrl || `${process.env.NEXTAUTH_URL}/dashboard?upgraded=true`,
+        redirectUrl: options.redirectUrl || `${process.env.NEXTAUTH_URL}/checkout/success`,
         receiptButtonText: 'Go to Dashboard',
       },
     });

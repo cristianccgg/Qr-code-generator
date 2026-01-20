@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/ui/Navbar';
+import Footer from '@/components/ui/Footer';
 import { FiCheck, FiX, FiZap, FiStar, FiAward, FiLoader } from 'react-icons/fi';
 import Link from 'next/link';
 
@@ -427,9 +428,7 @@ export default function PricingPage() {
         </main>
 
         {/* Footer */}
-        <footer className="text-center py-8 text-white/60 text-sm">
-          <p>Made with care for everyone who needs a simple QR code</p>
-        </footer>
+        <Footer variant="transparent" />
       </div>
     </div>
   );

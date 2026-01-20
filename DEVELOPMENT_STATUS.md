@@ -82,7 +82,7 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 - [x] Sección de FAQ
 - [x] Link en Navbar (desktop y móvil)
 
-### 10. Sistema de Planes y Límites ✨ **NUEVO**
+### 10. Sistema de Planes y Límites
 - [x] Modelo `Subscription` en Prisma (plan, status, fechas, campos Lemon Squeezy)
 - [x] Modelo `UsageRecord` para contadores mensuales
 - [x] Configuración de planes en `lib/plans.ts` (Free, Starter, Pro)
@@ -93,14 +93,32 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 - [x] `getSubscriptionStatus()` - status completo con uso actual
 - [x] Contadores: `incrementDynamicQRCount()`, `incrementScanCount()`
 
+### 11. Páginas Legales y Landing ✨ **NUEVO**
+- [x] Términos de Servicio (`/legal/terms`) con cláusulas de protección
+- [x] Política de Privacidad (`/legal/privacy`) con GDPR/CCPA
+- [x] Página de éxito post-pago (`/checkout/success`) con confetti
+- [x] Landing page mejorada con secciones:
+  - How It Works (3 pasos)
+  - Features (6 características)
+  - Static vs Dynamic comparison
+  - Use Cases (3 industrias)
+  - CTA final
+- [x] Footer reutilizable con links legales
+- [x] Componente `Footer.tsx` con variantes (light/dark/transparent)
+
 ---
 
 ## Arquitectura de Archivos Clave
 
 ```
 ├── app/
-│   ├── page.tsx                    # Página principal (generador público)
+│   ├── page.tsx                    # Landing page con generador QR
 │   ├── pricing/page.tsx            # Página de precios
+│   ├── legal/
+│   │   ├── terms/page.tsx          # Términos de servicio
+│   │   └── privacy/page.tsx        # Política de privacidad
+│   ├── checkout/
+│   │   └── success/page.tsx        # Página de éxito post-pago
 │   ├── api/
 │   │   ├── qr/
 │   │   │   ├── route.ts            # GET lista QRs
@@ -109,26 +127,39 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 │   │   │   ├── bulk-create/route.ts # POST creación masiva
 │   │   │   └── bulk-delete/route.ts
 │   │   ├── campaigns/              # CRUD campañas
-│   │   └── analytics/route.ts      # Analytics globales
+│   │   ├── analytics/route.ts      # Analytics globales
+│   │   ├── checkout/route.ts       # Crear sesión de checkout Lemon Squeezy
+│   │   ├── subscription/
+│   │   │   ├── route.ts            # GET estado de suscripción
+│   │   │   └── portal/route.ts     # POST obtener URL del portal
+│   │   └── webhooks/
+│   │       └── lemonsqueezy/route.ts # Webhook para eventos de pago
 │   ├── dashboard/
 │   │   ├── page.tsx                # Overview
 │   │   ├── qr-codes/               # Lista y detalle de QRs
 │   │   ├── bulk-create/            # Creación masiva desde CSV
 │   │   ├── labels/                 # Generador de etiquetas PDF
 │   │   ├── campaigns/              # Gestión de campañas
-│   │   └── analytics/              # Analytics globales
+│   │   ├── analytics/              # Analytics globales
+│   │   └── subscription/           # Gestión de suscripción y upgrades
 │   └── r/[shortId]/route.ts        # Redirect + tracking
 │
-├── components/qr/
-│   ├── QRForm.tsx                  # Formulario con tabs y estilos
-│   ├── QRPreview.tsx               # Preview + descarga (PNG/SVG/PDF)
-│   ├── QRCodesList.tsx             # Lista en dashboard + export
-│   ├── ColorPicker.tsx             # Selector de color
-│   ├── BulkUploader.tsx            # Upload de CSV
-│   ├── BulkPreviewTable.tsx        # Preview de datos CSV
-│   ├── BulkProgressBar.tsx         # Progreso de creación
-│   ├── BulkResultsSummary.tsx      # Resumen de resultados
-│   └── ExportModal.tsx             # Modal de exportación batch
+├── components/
+│   ├── ui/
+│   │   ├── Navbar.tsx              # Navegación principal
+│   │   └── Footer.tsx              # Footer con links legales (3 variantes)
+│   ├── dashboard/
+│   │   └── UsageLimitsCard.tsx     # Card de uso y límites del plan
+│   └── qr/
+│       ├── QRForm.tsx              # Formulario con tabs y estilos
+│       ├── QRPreview.tsx           # Preview + descarga (PNG/SVG/PDF)
+│       ├── QRCodesList.tsx         # Lista en dashboard + export
+│       ├── ColorPicker.tsx         # Selector de color
+│       ├── BulkUploader.tsx        # Upload de CSV
+│       ├── BulkPreviewTable.tsx    # Preview de datos CSV
+│       ├── BulkProgressBar.tsx     # Progreso de creación
+│       ├── BulkResultsSummary.tsx  # Resumen de resultados
+│       └── ExportModal.tsx         # Modal de exportación batch
 │
 ├── lib/
 │   ├── qr-generator.ts             # Generación con qr-code-styling
@@ -138,6 +169,7 @@ Generador de códigos QR con funcionalidades premium, diseñado para competir co
 │   ├── csv-template.ts             # Generador de plantilla CSV
 │   ├── plans.ts                    # Configuración de planes (límites, features, precios)
 │   ├── subscription.ts             # Lógica de suscripciones y verificación de límites
+│   ├── lemonsqueezy.ts             # SDK y helpers de Lemon Squeezy
 │   ├── auth.ts                     # Configuración NextAuth
 │   └── prisma.ts                   # Cliente Prisma singleton
 │
@@ -214,8 +246,10 @@ model UsageRecord {
 - [x] Endpoint `/api/checkout` para crear sesiones de pago
 - [x] Webhook `/api/webhooks/lemonsqueezy` para procesar eventos
 - [x] Botones de pricing conectados al checkout
-- [ ] Configurar webhook URL en Lemon Squeezy dashboard (requiere URL pública)
-- [ ] Probar flujo completo de pago
+- [x] Webhook URL configurado en Lemon Squeezy dashboard
+- [x] Flujo completo de pago probado y funcionando
+- [x] Página de gestión de suscripción (`/dashboard/subscription`)
+- [x] Integración con Customer Portal de Lemon Squeezy
 
 ### Prioridad 2: Templates Prediseñados
 - [ ] Galería de templates por industria
@@ -332,8 +366,35 @@ LEMON_SQUEEZY_PRO_YEARLY_VARIANT_ID=         # 1233961
 
 ## Notas para Próxima Sesión
 
-1. **Lemon Squeezy integrado** - falta configurar webhook URL cuando tengas URL pública (ngrok o deploy)
-2. **Para probar pagos**: ir a `/pricing`, click en plan → redirige a checkout de Lemon Squeezy
-3. **Webhook URL** a configurar en Lemon Squeezy: `https://tu-dominio.com/api/webhooks/lemonsqueezy`
-4. Los estilos ya se guardan en DB, listos para edición futura
-5. El generador (`lib/qr-generator.ts`) ya está preparado para recibir todas las opciones
+### Estado Actual: LISTO PARA LANZAMIENTO
+1. **Lemon Squeezy 100% funcional** - pagos, webhooks, y portal de cliente integrados
+2. **URL de producción**: `https://qr-code-generator-bxjy.vercel.app`
+3. **Páginas legales listas** - `/legal/terms` y `/legal/privacy`
+4. **Landing page mejorada** - con secciones de features, how it works, comparación, casos de uso
+5. **Página de éxito post-pago** - `/checkout/success` con confetti y guía
+
+### IMPORTANTE: Cambiar email de contacto
+En `/legal/terms` y `/legal/privacy` cambiar `support@qrgenerator.app` por tu email real.
+
+### Flujo de Pagos Implementado
+1. Usuario va a `/pricing` o `/dashboard/subscription`
+2. Click en plan → `/api/checkout` crea sesión → redirige a Lemon Squeezy
+3. Usuario completa pago en Lemon Squeezy
+4. Webhook recibe evento → actualiza `Subscription` en DB
+5. Usuario regresa a `/checkout/success` con confetti
+6. "Manage Billing" abre portal de Lemon Squeezy para facturas/cancelar
+
+### Páginas Públicas
+| Ruta | Descripción |
+|------|-------------|
+| `/` | Landing page con generador QR |
+| `/pricing` | Planes y precios |
+| `/legal/terms` | Términos de servicio |
+| `/legal/privacy` | Política de privacidad |
+| `/checkout/success` | Éxito post-pago |
+
+### Próximos pasos opcionales
+- [ ] Comprar dominio personalizado
+- [ ] Configurar dominio en Vercel y Lemon Squeezy
+- [ ] Agregar Google Analytics o Plausible
+- [ ] Templates prediseñados (Prioridad 2)
