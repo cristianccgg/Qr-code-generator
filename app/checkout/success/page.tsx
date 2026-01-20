@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FiCheck, FiArrowRight, FiZap, FiActivity, FiGrid, FiDownload, FiLoader } from 'react-icons/fi'
 import confetti from 'canvas-confetti'
@@ -10,7 +10,6 @@ import confetti from 'canvas-confetti'
 export default function CheckoutSuccessPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [planName, setPlanName] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
