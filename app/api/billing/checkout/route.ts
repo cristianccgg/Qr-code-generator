@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { createCheckout, getVariantId } from '@/lib/lemonsqueezy';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
     const variantId = getVariantId(planId, billingCycle);
 
     if (!variantId) {
-      console.error(`No variant ID configured for ${planId}-${billingCycle}`);
+      logger.error(`No variant ID configured for ${planId}-${billingCycle}`);
       return NextResponse.json(
         { error: 'Payment configuration error. Please contact support.' },
         { status: 500 }
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ checkoutUrl });
   } catch (error) {
-    console.error('Error creating checkout:', error);
+    logger.error('Error creating checkout:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { startOfDay, subDays, format } from 'date-fns'
+import { logger } from '@/lib/logger'
 
 export async function GET(
   request: NextRequest,
@@ -147,7 +148,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error fetching analytics:', error)
+    logger.error('Error fetching analytics:', error)
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 })
   }
 }

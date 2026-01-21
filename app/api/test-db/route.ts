@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/logger'
 
 export async function GET() {
   try {
@@ -15,7 +16,7 @@ export async function GET() {
       userCount
     })
   } catch (error) {
-    console.error('Database connection error:', error)
+    logger.error('Database connection error:', error)
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

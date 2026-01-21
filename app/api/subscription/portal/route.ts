@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getCustomerPortalUrl } from '@/lib/lemonsqueezy';
+import { logger } from '@/lib/logger';
 
 export async function POST() {
   try {
@@ -35,7 +36,7 @@ export async function POST() {
 
     return NextResponse.json({ portalUrl });
   } catch (error) {
-    console.error('Portal URL error:', error);
+    logger.error('Portal URL error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

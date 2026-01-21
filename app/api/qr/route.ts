@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { nanoid } from 'nanoid'
+import { logger } from '@/lib/logger'
 
 // GET all QR codes for the authenticated user
 export async function GET(request: NextRequest) {
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(qrCode, { status: 201 })
   } catch (error) {
-    console.error('Error creating QR code:', error)
+    logger.error('Error creating QR code:', error)
     return NextResponse.json({ error: 'Failed to create QR code' }, { status: 500 })
   }
 }

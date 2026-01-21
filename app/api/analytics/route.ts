@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { userHasFeature } from '@/lib/subscription'
 import { startOfDay, subDays, format, eachDayOfInterval } from 'date-fns'
+import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -173,7 +174,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Error fetching analytics:', error)
+    logger.error('Error fetching analytics:', error)
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 })
   }
 }

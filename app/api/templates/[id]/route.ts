@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(template);
   } catch (error) {
-    console.error('Error fetching template:', error);
+    logger.error('Error fetching template:', error);
     return NextResponse.json(
       { error: 'Failed to fetch template' },
       { status: 500 }
@@ -80,7 +81,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting template:', error);
+    logger.error('Error deleting template:', error);
     return NextResponse.json(
       { error: 'Failed to delete template' },
       { status: 500 }
@@ -143,7 +144,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error('Error updating template:', error);
+    logger.error('Error updating template:', error);
     return NextResponse.json(
       { error: 'Failed to update template' },
       { status: 500 }

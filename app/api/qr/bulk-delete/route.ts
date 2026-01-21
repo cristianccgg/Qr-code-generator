@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
       deletedCount: qrCodes.length,
     });
   } catch (error) {
-    console.error("Error bulk deleting QR codes:", error);
+    logger.error("Error bulk deleting QR codes:", error);
     return NextResponse.json(
       { error: "Failed to delete QR codes" },
       { status: 500 }

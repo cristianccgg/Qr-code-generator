@@ -398,3 +398,85 @@ En `/legal/terms` y `/legal/privacy` cambiar `support@qrgenerator.app` por tu em
 - [ ] Configurar dominio en Vercel y Lemon Squeezy
 - [ ] Agregar Google Analytics o Plausible
 - [ ] Templates prediseñados (Prioridad 2)
+
+---
+
+## Checklist de Pruebas Manuales Pre-Lanzamiento
+
+### Flujo Público (sin login)
+- [ ] Landing page carga correctamente (`/`)
+- [ ] Generar QR tipo URL - preview aparece
+- [ ] Generar QR tipo WiFi - cambiar tipo, llenar campos
+- [ ] Descargar PNG - archivo se descarga
+- [ ] Descargar SVG - archivo se descarga
+- [ ] Cambiar estilos (dots) - preview actualiza
+- [ ] Cambiar colores - preview actualiza
+- [ ] Agregar logo - aparece en centro del QR
+- [ ] Página pricing (`/pricing`) carga con 3 planes
+- [ ] Página terms (`/legal/terms`) carga
+- [ ] Página privacy (`/legal/privacy`) carga
+
+### Autenticación
+- [ ] Registro - crear cuenta nueva con email/password
+- [ ] Login - iniciar sesión con credenciales
+- [ ] Logout - cerrar sesión, redirige a landing
+- [ ] Acceso protegido - `/dashboard` sin login redirige a signin
+
+### Dashboard (usuario Free)
+- [ ] Dashboard carga (`/dashboard`)
+- [ ] Crear QR dinámico bloqueado - mensaje de upgrade
+- [ ] Ver límites - card muestra "0/0 Dynamic QRs"
+
+### Flujo de Pago (modo test de Lemon Squeezy)
+- [ ] Click en plan Starter - redirige a checkout Lemon Squeezy
+- [ ] Completar pago test - tarjeta `4242 4242 4242 4242`
+- [ ] Webhook procesa - verificar en BD que subscription se actualizó
+- [ ] Página success (`/checkout/success`) muestra confetti
+- [ ] Plan actualizado - dashboard muestra plan Starter
+
+### Dashboard (usuario Starter/Pro)
+- [ ] Crear QR dinámico - se guarda en dashboard
+- [ ] Editar URL destino - cambiar destinationUrl de un QR existente
+- [ ] Escanear QR - escanear con móvil, redirige a URL correcta
+- [ ] Ver analytics (`/dashboard/analytics`) - muestra gráficos
+- [ ] Ver scan en historial - el scan aparece registrado
+- [ ] Crear campaña (`/dashboard/campaigns`) - crear nueva
+- [ ] Asignar QR a campaña - editar QR, seleccionar campaña
+- [ ] Eliminar QR - borrar un QR, desaparece de lista
+
+### Bulk Creation (solo Pro)
+- [ ] Acceso bulk (`/dashboard/bulk-create`) - carga o muestra upgrade
+- [ ] Descargar template CSV - botón descarga archivo
+- [ ] Subir CSV válido - preview muestra datos
+- [ ] Crear QRs en batch - progress bar, QRs se crean
+- [ ] Descargar ZIP - ZIP con todos los QRs generados
+
+### Exportación
+- [ ] Export PDF individual - desde preview, descargar PDF
+- [ ] Export batch ZIP - seleccionar varios QRs, Export, ZIP
+- [ ] Export labels PDF - seleccionar QRs, Export, Labels PDF
+
+### Gestión de Suscripción
+- [ ] Ver suscripción (`/dashboard/subscription`) - muestra plan actual
+- [ ] Manage Billing - abre portal de Lemon Squeezy
+- [ ] Cancelar (en portal) - cancelar suscripción, status cambia
+
+---
+
+## Mejoras de Código Realizadas (Enero 2026)
+
+### ✅ Completado
+- [x] Eliminado webhook duplicado (`/api/billing/webhook`) - ahora solo existe `/api/webhooks/lemonsqueezy`
+- [x] Corregido type safety en webhook (`status as any` → tipo correcto)
+- [x] Creado logger condicional (`lib/logger.ts`) - solo imprime en desarrollo
+- [x] Reemplazados ~45 console.log/error en APIs por `logger.log/error`
+
+### ⚠️ Pendiente (no bloquean lanzamiento)
+- [ ] Verificación de email en signup (opcional - considerar Supabase Auth o servicio de email)
+- [ ] Rate limiting en endpoints (agregar cuando haya más tráfico)
+- [ ] Mejorar Geo API si hay muchos scans simultáneos (ip-api.com tiene límite 45 req/min)
+
+### Notas Técnicas
+- **Logger**: En producción (`NODE_ENV=production`) los logs no se muestran
+- **Webhook URL**: Asegurarse de que Lemon Squeezy apunte a `/api/webhooks/lemonsqueezy`
+- **Supabase**: Se usa solo como PostgreSQL (Prisma), NO Supabase Auth

@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid';
 import { userHasFeature } from '@/lib/subscription';
 import { BulkCreateRequest, BulkCreateResponse, BulkQRCreated, BulkQRFailed, BULK_LIMITS } from '@/types/bulk';
 import { QRType, QRFormat } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   try {
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest) {
       status: failed.length === 0 ? 201 : 207, // 207 = Multi-Status
     });
   } catch (error) {
-    console.error('Error in bulk create:', error);
+    logger.error('Error in bulk create:', error);
     return NextResponse.json(
       { error: 'Failed to create QR codes' },
       { status: 500 }

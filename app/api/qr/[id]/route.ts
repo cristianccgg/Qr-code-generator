@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/logger'
 
 // GET single QR code
 export async function GET(
@@ -75,7 +76,7 @@ export async function PATCH(
 
     return NextResponse.json(updated)
   } catch (error) {
-    console.error('Error updating QR code:', error)
+    logger.error('Error updating QR code:', error)
     return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
   }
 }
@@ -108,7 +109,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting QR code:', error)
+    logger.error('Error deleting QR code:', error)
     return NextResponse.json({ error: 'Failed to delete' }, { status: 500 })
   }
 }

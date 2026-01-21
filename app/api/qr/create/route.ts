@@ -8,6 +8,7 @@ import {
   incrementDynamicQRCount,
   userHasFeature,
 } from "@/lib/subscription";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
     // Quitar espacios o saltos de línea accidentales para asegurar que sea un único texto plano
     shortUrl = shortUrl.trim().replace(/\s+/g, "");
 
-    console.log("[QR Create] Generated shortUrl:", shortUrl);
+    logger.log("[QR Create] Generated shortUrl:", shortUrl);
 
     // Validar que la campaña pertenece al usuario (si se especificó)
     if (campaignId) {
@@ -165,7 +166,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error creating QR code:", error);
+    logger.error("Error creating QR code:", error);
     return NextResponse.json(
       { error: "Failed to create QR code" },
       { status: 500 }

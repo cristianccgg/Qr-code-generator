@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { SYSTEM_TEMPLATES } from '@/lib/system-templates';
 import { QRTemplate, QRStyleConfig, TemplateCategory } from '@/types/templates';
+import { logger } from '@/lib/logger';
 
 // GET /api/templates - List templates (system + user's personal)
 export async function GET(req: NextRequest) {
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
 
     // Verify prisma client has qRTemplate model (may need server restart after schema change)
     if (!prisma.qRTemplate) {
-      console.error('Prisma client does not have qRTemplate model. Please restart the dev server after running prisma generate.');
+      logger.error('Prisma client does not have qRTemplate model. Please restart the dev server after running prisma generate.');
       return NextResponse.json(
         { error: 'Server needs to be restarted. Please run: npm run dev' },
         { status: 500 }
@@ -103,7 +104,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching templates:', error);
+    logger.error('Error fetching templates:', error);
     return NextResponse.json(
       { error: 'Failed to fetch templates', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
@@ -161,7 +162,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(template, { status: 201 });
   } catch (error) {
-    console.error('Error creating template:', error);
+    logger.error('Error creating template:', error);
     return NextResponse.json(
       { error: 'Failed to create template' },
       { status: 500 }

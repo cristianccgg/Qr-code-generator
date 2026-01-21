@@ -6,6 +6,7 @@ import {
   variantIdToBillingCycle,
   type LemonSqueezyWebhookEvent,
 } from '@/lib/lemonsqueezy';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,14 +15,14 @@ export async function POST(req: NextRequest) {
 
     // Verify webhook signature
     if (!verifyWebhookSignature(rawBody, signature)) {
-      console.error('Invalid webhook signature');
+      logger.error('Invalid webhook signature');
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const event: LemonSqueezyWebhookEvent = JSON.parse(rawBody);
     const eventName = event.meta.event_name;
 
-    console.log(`[Webhook] Received event: ${eventName}`);
+    logger.log(`[Webhook] Received event: ${eventName}`);
 
     // Handle different event types
     switch (eventName) {
@@ -54,12 +55,12 @@ export async function POST(req: NextRequest) {
         break;
 
       default:
-        console.log(`[Webhook] Unhandled event type: ${eventName}`);
+        logger.log(`[Webhook] Unhandled event type: ${eventName}`);
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('[Webhook] Error processing webhook:', error);
+    logger.error('[Webhook] Error processing webhook:', error);
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }
@@ -72,7 +73,7 @@ async function handleSubscriptionCreated(event: LemonSqueezyWebhookEvent) {
   const userId = meta.custom_data?.user_id;
 
   if (!userId) {
-    console.error('[Webhook] No user_id in custom_data');
+    logger.error('[Webhook] No user_id in custom_data');
     return;
   }
 
@@ -81,11 +82,11 @@ async function handleSubscriptionCreated(event: LemonSqueezyWebhookEvent) {
   const billingCycle = variantIdToBillingCycle(variantId);
 
   if (!planId) {
-    console.error(`[Webhook] Unknown variant ID: ${variantId}`);
+    logger.error(`[Webhook] Unknown variant ID: ${variantId}`);
     return;
   }
 
-  console.log(`[Webhook] Creating subscription for user ${userId}: ${planId} (${billingCycle})`);
+  logger.log(`[Webhook] Creating subscription for user ${userId}: ${planId} (${billingCycle})`);
 
   // Create or update subscription in our database
   await prisma.subscription.upsert({
@@ -123,7 +124,7 @@ async function handleSubscriptionCreated(event: LemonSqueezyWebhookEvent) {
     },
   });
 
-  console.log(`[Webhook] Subscription created for user ${userId}`);
+  logger.log(`[Webhook] Subscription created for user ${userId}`);
 }
 
 async function handleSubscriptionUpdated(event: LemonSqueezyWebhookEvent) {
@@ -136,7 +137,7 @@ async function handleSubscriptionUpdated(event: LemonSqueezyWebhookEvent) {
   });
 
   if (!subscription) {
-    console.error(`[Webhook] Subscription not found: ${subscriptionId}`);
+    logger.error(`[Webhook] Subscription not found: ${subscriptionId}`);
     return;
   }
 
@@ -145,7 +146,7 @@ async function handleSubscriptionUpdated(event: LemonSqueezyWebhookEvent) {
   const billingCycle = variantIdToBillingCycle(variantId);
 
   // Map Lemon Squeezy status to our status
-  const statusMap: Record<string, string> = {
+  const statusMap: Record<string, 'ACTIVE' | 'CANCELLED' | 'PAST_DUE' | 'PAUSED' | 'TRIALING' | 'EXPIRED'> = {
     active: 'ACTIVE',
     cancelled: 'CANCELLED',
     past_due: 'PAST_DUE',
@@ -154,13 +155,13 @@ async function handleSubscriptionUpdated(event: LemonSqueezyWebhookEvent) {
     on_trial: 'TRIALING',
   };
 
-  const status = statusMap[data.attributes.status] || 'ACTIVE';
+  const status = statusMap[data.attributes.status] ?? 'ACTIVE';
 
   await prisma.subscription.update({
     where: { id: subscription.id },
     data: {
       planId: planId || subscription.planId,
-      status: status as any,
+      status,
       billingCycle: billingCycle || subscription.billingCycle,
       lemonSqueezyVariantId: variantId,
       currentPeriodEnd: data.attributes.renews_at
@@ -170,7 +171,7 @@ async function handleSubscriptionUpdated(event: LemonSqueezyWebhookEvent) {
     },
   });
 
-  console.log(`[Webhook] Subscription updated: ${subscriptionId}`);
+  logger.log(`[Webhook] Subscription updated: ${subscriptionId}`);
 }
 
 async function handleSubscriptionCancelled(event: LemonSqueezyWebhookEvent) {
@@ -182,7 +183,7 @@ async function handleSubscriptionCancelled(event: LemonSqueezyWebhookEvent) {
   });
 
   if (!subscription) {
-    console.error(`[Webhook] Subscription not found: ${subscriptionId}`);
+    logger.error(`[Webhook] Subscription not found: ${subscriptionId}`);
     return;
   }
 
@@ -198,7 +199,7 @@ async function handleSubscriptionCancelled(event: LemonSqueezyWebhookEvent) {
     },
   });
 
-  console.log(`[Webhook] Subscription cancelled: ${subscriptionId}`);
+  logger.log(`[Webhook] Subscription cancelled: ${subscriptionId}`);
 }
 
 async function handleSubscriptionResumed(event: LemonSqueezyWebhookEvent) {
@@ -210,7 +211,7 @@ async function handleSubscriptionResumed(event: LemonSqueezyWebhookEvent) {
   });
 
   if (!subscription) {
-    console.error(`[Webhook] Subscription not found: ${subscriptionId}`);
+    logger.error(`[Webhook] Subscription not found: ${subscriptionId}`);
     return;
   }
 
@@ -223,7 +224,7 @@ async function handleSubscriptionResumed(event: LemonSqueezyWebhookEvent) {
     },
   });
 
-  console.log(`[Webhook] Subscription resumed: ${subscriptionId}`);
+  logger.log(`[Webhook] Subscription resumed: ${subscriptionId}`);
 }
 
 async function handleSubscriptionExpired(event: LemonSqueezyWebhookEvent) {
@@ -235,7 +236,7 @@ async function handleSubscriptionExpired(event: LemonSqueezyWebhookEvent) {
   });
 
   if (!subscription) {
-    console.error(`[Webhook] Subscription not found: ${subscriptionId}`);
+    logger.error(`[Webhook] Subscription not found: ${subscriptionId}`);
     return;
   }
 
@@ -249,14 +250,14 @@ async function handleSubscriptionExpired(event: LemonSqueezyWebhookEvent) {
     },
   });
 
-  console.log(`[Webhook] Subscription expired, downgraded to free: ${subscriptionId}`);
+  logger.log(`[Webhook] Subscription expired, downgraded to free: ${subscriptionId}`);
 }
 
 async function handlePaymentSuccess(event: LemonSqueezyWebhookEvent) {
   const { data } = event;
   const subscriptionId = data.id;
 
-  console.log(`[Webhook] Payment successful for subscription: ${subscriptionId}`);
+  logger.log(`[Webhook] Payment successful for subscription: ${subscriptionId}`);
 
   // Update the subscription period
   const subscription = await prisma.subscription.findFirst({
@@ -281,7 +282,7 @@ async function handlePaymentFailed(event: LemonSqueezyWebhookEvent) {
   const { data } = event;
   const subscriptionId = data.id;
 
-  console.log(`[Webhook] Payment failed for subscription: ${subscriptionId}`);
+  logger.log(`[Webhook] Payment failed for subscription: ${subscriptionId}`);
 
   const subscription = await prisma.subscription.findFirst({
     where: { lemonSqueezyId: subscriptionId },
